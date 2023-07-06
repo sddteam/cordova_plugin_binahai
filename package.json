@@ -1,0 +1,17 @@
+{
+  "name": "cordova-plugin-binahai",
+  "version": "1.0.0",
+  "description": "binahai sdk ionic integration",
+  "cordova": {
+    "id": "cordova-plugin-binahai",
+    "platforms": [
+      "android"
+    ]
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-android"
+  ],
+  "author": "marhano",
+  "license": "ISC"
+}

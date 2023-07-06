@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin id="cordova-plugin-binahai" version="1.0.0" 
+xmlns="http://apache.org/cordova/ns/plugins/1.0" 
+xmlns:android="http://schemas.android.com/apk/res/android">
+    <name>BinahAi</name>
+    <js-module name="BinahAi" src="www/BinahAi.js">
+        <clobbers target="cordova.plugins.BinahAi" />
+    </js-module>
+    <platform name="android">
+        <config-file parent="/*" target="res/xml/config.xml">
+            <feature name="BinahAi"><param name="android-package" value="inc.bastion.binahai.BinahAi" /></feature>
+        </config-file>
+        <config-file parent="/*" target="AndroidManifest.xml"></config-file>
+        <source-file src="src/android/BinahAi.java" target-dir="src/inc/bastion/binahai" />
+    </platform>
+</plugin>
