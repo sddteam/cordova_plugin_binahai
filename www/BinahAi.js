@@ -4,8 +4,12 @@ var PLUGIN_NAME = "BinahAi";
 
 var BinahAi = function() {} 
 
-BinahAi.coolMethod = function (arg0, success, error) {
-    exec(success, error, PLUGIN_NAME, 'coolMethod', [arg0]);
+BinahAi.startCamera = function (onSuccess, onError) {
+    exec(onSuccess, onError, PLUGIN_NAME, 'startCamera', []);
+};
+
+BinahAi.startScan = function (onSuccess, onError) {
+    exec(onSuccess, onError, PLUGIN_NAME, 'startScan', []);
 };
 
 module.exports = BinahAi;

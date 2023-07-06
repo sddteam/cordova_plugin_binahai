@@ -11,22 +11,32 @@ import org.json.JSONObject;
  * This class echoes a string called from JavaScript.
  */
 public class BinahAi extends CordovaPlugin {
+    private static final String TAG = "BinahAi";
+
+    private static final String LICENSE_KEY = "668765-6009B5-426FAD-D62FC0-D89858-19B9FF";
+
+    private static final String START_CAMERA = "startCamera";
+    private static final String START_SCAN = "startScan";
 
     @Override
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-        if (action.equals("coolMethod")) {
-            String message = args.getString(0);
-            this.coolMethod(message, callbackContext);
-            return true;
+        if (START_CAMERA.equals(action)){
+            return startCamera(callbackContext);
+        }else if(START_SCAN.equals(action)){
+            return startScan(callbackContext);
         }
         return false;
     }
 
-    private void coolMethod(String message, CallbackContext callbackContext) {
-        if (message != null && message.length() > 0) {
-            callbackContext.success(message);
-        } else {
-            callbackContext.error("Expected one non-empty string argument.");
-        }
+    private boolean startCamera(CallbackContext callbackContext){
+        callbackContext.success(START_CAMERA);
+        return true;
     }
+
+    private boolean startScan(CallbackContext callbackContext) {
+        callbackContext.success(START_SCAN);
+        return true;
+    }
+
+    
 }
