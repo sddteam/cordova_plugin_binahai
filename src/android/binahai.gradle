@@ -1,0 +1,3 @@
+dependencies{
+    implementation files('src/main/libs/bnhsdk.aar') 
+}

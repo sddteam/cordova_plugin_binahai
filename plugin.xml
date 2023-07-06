@@ -4,11 +4,15 @@ xmlns="http://apache.org/cordova/ns/plugins/1.0"
 xmlns:android="http://schemas.android.com/apk/res/android">
     <name>BinahAi</name>
     <js-module name="BinahAi" src="www/BinahAi.js">
-        <clobbers target="cordova.plugins.BinahAi" />
+        <clobbers target="BinahAi" />
     </js-module>
     <platform name="android">
+        <resource-file src="src/android/libs/bnhsdk.aar" target="libs/bnhsdk.aar"/>
+        <framework src="src/android/binahai.gradle" custom="true" type="gradleReference" />
         <config-file parent="/*" target="res/xml/config.xml">
-            <feature name="BinahAi"><param name="android-package" value="inc.bastion.binahai.BinahAi" /></feature>
+            <feature name="BinahAi">
+                <param name="android-package" value="inc.bastion.binahai.BinahAi" />
+            </feature>
         </config-file>
         <config-file parent="/*" target="AndroidManifest.xml"></config-file>
         <source-file src="src/android/BinahAi.java" target-dir="src/inc/bastion/binahai" />
