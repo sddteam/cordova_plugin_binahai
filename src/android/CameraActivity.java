@@ -42,7 +42,7 @@ import ai.binah.sdk.api.vital_signs.VitalSignsResults;
 import ai.binah.sdk.session.FaceSessionBuilder;
 import io.ionic.starter.R;
 
-public class TestActivity extends Fragment implements ImageListener, SessionInfoListener, VitalSignsListener{
+public class CameraActivity extends Fragment implements ImageListener, SessionInfoListener, VitalSignsListener{
   public interface ImagePreviewListener{
     void onSessionCreated(Session session);
     void onFinalResult(VitalSignsResults vitalSignsResults);
@@ -56,10 +56,6 @@ public class TestActivity extends Fragment implements ImageListener, SessionInfo
   private Session mSession;
   private Bitmap mFaceDetection;
   private TextureView _cameraView;
-  private TextView _pulseRate;
-  private TextView _respirationRate;
-  private TextView _oxygenSaturation;
-  private Button _startStop;
   private View _view;
 
   private String appResourcePackage;
@@ -123,10 +119,6 @@ public class TestActivity extends Fragment implements ImageListener, SessionInfo
 
   private void initUi(){
     _cameraView = (TextureView) _view.findViewById(R.id.cameraView);
-    _pulseRate = (TextView) _view.findViewById(R.id.pulseRate);
-    _respirationRate = _view.findViewById(R.id.respirationRate);
-    _oxygenSaturation = _view.findViewById(R.id.oxygenSaturation);
-    _startStop = _view.findViewById(R.id.startStopButton);
   }
 
   private Bitmap createFaceDetectionBitmap() {

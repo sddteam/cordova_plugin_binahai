@@ -42,7 +42,7 @@ import ai.binah.sdk.session.FaceSessionBuilder;
 /**
  * This class echoes a string called from JavaScript.
  */
-public class BinahAi extends CordovaPlugin implements TestActivity.ImagePreviewListener {
+public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePreviewListener {
   private static final String TAG = "BinahAi";
   private Session mSession;
   private static final long MEASUREMENT_DURATION = 60;
@@ -55,7 +55,7 @@ public class BinahAi extends CordovaPlugin implements TestActivity.ImagePreviewL
   private boolean toBack = true;
   private ViewParent webViewParent;
 
-  private TestActivity fragment;
+  private CameraActivity fragment;
 
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -70,7 +70,7 @@ public class BinahAi extends CordovaPlugin implements TestActivity.ImagePreviewL
   private boolean startCamera(CallbackContext callbackContext){
     startCameraCallbackContext = callbackContext;
     final float opacity = Float.parseFloat("1");
-    fragment = new TestActivity();
+    fragment = new CameraActivity();
     fragment.setEventListener(this);
 
     cordova.getActivity().runOnUiThread(new Runnable() {
