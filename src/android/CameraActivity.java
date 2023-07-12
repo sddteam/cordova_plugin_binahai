@@ -45,6 +45,7 @@ import io.ionic.starter.R;
 public class CameraActivity extends Fragment implements ImageListener, SessionInfoListener, VitalSignsListener{
   public interface ImagePreviewListener{
     void onSessionCreated(Session session);
+    void onStartScan(VitalSign vitalSign);
     void onFinalResult(VitalSignsResults vitalSignsResults);
   }
   private ImagePreviewListener eventListener;
@@ -194,7 +195,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
 
   @Override
   public void onVitalSign(VitalSign vitalSign) {
-
+    eventListener.onStartScan(vitalSign);
   }
 
   @Override
