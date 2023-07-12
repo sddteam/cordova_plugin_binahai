@@ -48,7 +48,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     void onFinalResult(VitalSignsResults vitalSignsResults);
   }
   private ImagePreviewListener eventListener;
-  private static final String TAG = "TestActivity";
+  private static final String TAG = "CameraActivity";
 
   private static final int PERMISSION_REQUEST_CODE = 12345;
   private static final String LICENSE_KEY = "668765-6009B5-426FAD-D62FC0-D89858-19B9FF";
@@ -70,7 +70,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     appResourcePackage = getActivity().getPackageName();
     createSession();
 
-    _view = inflater.inflate(getResources().getIdentifier("activity_test", "layout", appResourcePackage), container, false);
+    _view = inflater.inflate(getResources().getIdentifier("activity_camera", "layout", appResourcePackage), container, false);
     initUi();
     mFaceDetection = createFaceDetectionBitmap();
 
