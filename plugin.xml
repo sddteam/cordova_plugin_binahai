@@ -9,8 +9,12 @@ xmlns:android="http://schemas.android.com/apk/res/android">
     <platform name="android">
         <resource-file src="src/android/libs/bnhsdk.aar" target="libs/bnhsdk.aar"/>
         <resource-file src="src/android/activity_camera.xml" target="res/layout/activity_camera.xml" />
-        <resource-file src="src/android/strings.xml" target="res/values/strings.xml" />
         <resource-file src="src/android/face_detection.xml" target="res/drawable/face_detection.xml" />
+        <resource-file src="src/android/camera_theme.xml" target="res/values/camera_theme.xml" />
+        <edit-config file="res/values/strings.xml" target="/resources" >
+            <string name="start">START</string>
+            <string name="stop">STOP</string>
+        </edit-config>
         <framework src="src/android/binahai.gradle" custom="true" type="gradleReference" />
         <config-file parent="/*" target="res/xml/config.xml">
             <feature name="BinahAi">
@@ -18,9 +22,7 @@ xmlns:android="http://schemas.android.com/apk/res/android">
             </feature>
         </config-file>
         <config-file parent="/manifest/application" target="AndroidManifest.xml">
-            <activity android:exported="false" android:name="inc.bastion.binahai.CameraActivity" android:theme="@style/Theme.AppCompat.NoActionBar">
-                <meta-data android:name="android.app.lib_name" android:value="" />
-            </activity>
+            <activity android:name="inc.bastion.binahai.CameraActivity" android:screenOrientation="portrait" android:theme="@style/CameraTheme" />
         </config-file>
         <source-file src="src/android/BinahAi.java" target-dir="src/inc/bastion/binahai" />
         <source-file src="src/android/CameraActivity.java" target-dir="src/inc/bastion/binahai" />
