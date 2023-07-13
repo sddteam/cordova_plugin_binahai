@@ -72,10 +72,12 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   private static final String START_CAMERA = "startCamera";
   private static final String START_SCAN = "startScan";
   private static final String STOP_SCAN = "stopScan";
+  private static final String IMAGE_VALIDATION = "imageValidation";
 
   private CallbackContext startCameraCallbackContext;
   private CallbackContext startScanCallbackContext;
   private CallbackContext stopScanCallbackContext;
+  private CallbackContext imageValidationCallbackContext;
 
   private int containerViewId = 20;
   private boolean toBack = true;
@@ -91,6 +93,8 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       return startScan(callbackContext);
     }else if(STOP_SCAN.equals(action)){
       return stopScan(callbackContext);
+    }else if(IMAGE_VALIDATION.equals(action)){
+      return imageValidation(callbackContext);
     }
     return false;
   }
@@ -175,6 +179,12 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return true;
   }
 
+  private boolean imageValidation(CallbackContext callbackContext){
+    imageValidationCallbackContext = callbackContext;
+
+    return true;
+  }
+
   @Override
   public void onSessionCreated(Session session) {
     this.mSession = session;
@@ -253,7 +263,6 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     String wellnessLevelValue = wellnessLevel != null ? wellnessLevel.getValue().toString() : "N/A";
 
     JSONObject finalResult = new JSONObject();
-    JSONObject liveFinalResult = new JSONObject();
     try {
       finalResult.put("pulseRate", pulseRateValue);
       finalResult.put("bloodPressure", bloodPressureValue);
@@ -275,21 +284,19 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       finalResult.put("stressIndex", stressIndexValue);
       finalResult.put("wellnessIndex", wellnessIndexValue);
       finalResult.put("wellnessLevel", wellnessLevelValue);
-
-      liveFinalResult.put("pulseRate", pulseRateValue);
-      liveFinalResult.put("respirationRate", respirationRateValue);
-      liveFinalResult.put("oxygenSaturation", oxygenSaturationValue);
-
     } catch (JSONException e) {
       e.printStackTrace();
     }
 
-    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, finalResult);
-    stopScanCallbackContext.sendPluginResult(pluginResult);
+    PluginResult imageValidationPluginResult = new PluginResult(PluginResult.Status.OK);
+    imageValidationPluginResult.setKeepCallback(false);
+    imageValidationCallbackContext.sendPluginResult(imageValidationPluginResult);
 
-    PluginResult livePluginResult = new PluginResult(PluginResult.Status.OK, liveFinalResult);
-    livePluginResult.setKeepCallback(false);
-    startScanCallbackContext.sendPluginResult(livePluginResult);
+    PluginResult startScanPluginResult = new PluginResult(PluginResult.Status.OK);
+    startScanPluginResult.setKeepCallback(false);
+    startScanCallbackContext.sendPluginResult(startScanPluginResult);
+
+    stopScanCallbackContext.success(finalResult);
   }
 
   @Override
@@ -302,7 +309,8 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     }
 
     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, result);
-    startScanCallbackContext.sendPluginResult(pluginResult);
+    pluginResult.setKeepCallback(true);
+    imageValidationCallbackContext.sendPluginResult(pluginResult);
   }
 
   private void startSession() {

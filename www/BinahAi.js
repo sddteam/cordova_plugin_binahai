@@ -16,4 +16,8 @@ BinahAi.stopScan = function (onSuccess, onError) {
     exec(onSuccess, onError, PLUGIN_NAME, 'stopScan', []);
 };
 
+BinahAi.imageValidation = function (onSuccess, onError) {
+    exec(onSuccess, onError, PLUGIN_NAME, 'imageValidation', []);
+};
+
 module.exports = BinahAi;
