@@ -284,12 +284,25 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       e.printStackTrace();
     }
 
+    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, finalResult);
+    stopScanCallbackContext.sendPluginResult(pluginResult);
+
     PluginResult livePluginResult = new PluginResult(PluginResult.Status.OK, liveFinalResult);
     livePluginResult.setKeepCallback(false);
     startScanCallbackContext.sendPluginResult(livePluginResult);
+  }
 
-    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, finalResult);
-    stopScanCallbackContext.sendPluginResult(pluginResult);
+  @Override
+  public void onImageValidation(int errorCode) {
+    JSONObject result = new JSONObject();
+    try{
+      result.put("imageValidationError", errorCode);
+    }catch (JSONException e){
+      e.printStackTrace();
+    }
+
+    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, result);
+    startScanCallbackContext.sendPluginResult(pluginResult);
   }
 
   private void startSession() {

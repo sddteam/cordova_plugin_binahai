@@ -47,6 +47,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     void onSessionCreated(Session session);
     void onStartScan(VitalSign vitalSign);
     void onFinalResult(VitalSignsResults vitalSignsResults);
+    void onImageValidation(int errorCode);
   }
   private ImagePreviewListener eventListener;
   private static final String TAG = "CameraActivity";
@@ -83,6 +84,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     getActivity().runOnUiThread(() -> {
       if (imageData.getImageValidity() != ImageValidity.VALID) {
         Log.i(TAG, "Image Validity Error: "+ imageData.getImageValidity());
+        eventListener.onImageValidation(imageData.getImageValidity());
       }
       Canvas canvas = _cameraView.lockCanvas();
       if (canvas == null) {
