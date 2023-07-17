@@ -4,8 +4,28 @@ var PLUGIN_NAME = "BinahAi";
 
 var BinahAi = function() {} 
 
-BinahAi.startCamera = function (licenseKey, sex, age, weight, onSuccess, onError) {
-    exec(onSuccess, onError, PLUGIN_NAME, 'startCamera', [licenseKey, sex, age, weight]);
+function isFunction(obj) {
+    return !!(obj && obj.constructor && obj.call && obj.apply);
+  };
+
+BinahAi.startCamera = function (options, onSuccess, onError) {
+    if(!options){
+        options = {};
+    }else if(isFunction(options)){
+        onSuccess = options;
+        options = {};
+    }
+
+    options.licenseKey = options.licenseKey;
+    options.weight = options.weight;
+    options.age = options.age;
+    options.sex = options.sex;
+
+    exec(onSuccess, onError, PLUGIN_NAME, 'startCamera', [
+        options.licenseKey, 
+        options.sex, 
+        options.age, 
+        options.weight]);
 };
 
 BinahAi.startScan = function (onSuccess, onError) {
