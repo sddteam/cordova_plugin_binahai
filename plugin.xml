@@ -26,5 +26,6 @@ xmlns:android="http://schemas.android.com/apk/res/android">
         </config-file>
         <source-file src="src/android/BinahAi.java" target-dir="src/inc/bastion/binahai" />
         <source-file src="src/android/CameraActivity.java" target-dir="src/inc/bastion/binahai" />
+        <source-file src="src/android/SignTypeNames.java" target-dir="src/inc/bastion/binahai" />
     </platform>
 </plugin>
