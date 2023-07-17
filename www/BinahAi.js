@@ -4,8 +4,8 @@ var PLUGIN_NAME = "BinahAi";
 
 var BinahAi = function() {} 
 
-BinahAi.startCamera = function (onSuccess, onError) {
-    exec(onSuccess, onError, PLUGIN_NAME, 'startCamera', []);
+BinahAi.startCamera = function (licenseKey, sex, age, weight, onSuccess, onError) {
+    exec(onSuccess, onError, PLUGIN_NAME, 'startCamera', [licenseKey, sex, age, weight]);
 };
 
 BinahAi.startScan = function (onSuccess, onError) {

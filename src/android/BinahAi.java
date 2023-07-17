@@ -1,15 +1,11 @@
 package inc.bastion.binahai;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.telecom.Call;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
@@ -22,52 +18,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import ai.binah.sdk.api.HealthMonitorException;
-import ai.binah.sdk.api.SessionEnabledVitalSigns;
-import ai.binah.sdk.api.alerts.ErrorData;
-import ai.binah.sdk.api.alerts.WarningData;
-import ai.binah.sdk.api.images.ImageListener;
-import ai.binah.sdk.api.license.LicenseDetails;
-import ai.binah.sdk.api.license.LicenseInfo;
-import ai.binah.sdk.api.license.LicenseOfflineMeasurements;
 import ai.binah.sdk.api.session.Session;
-import ai.binah.sdk.api.session.SessionInfoListener;
 import ai.binah.sdk.api.session.SessionState;
 import ai.binah.sdk.api.session.demographics.Sex;
-import ai.binah.sdk.api.session.demographics.SubjectDemographic;
-import ai.binah.sdk.api.vital_signs.VitalSign;
-import ai.binah.sdk.api.vital_signs.VitalSignTypes;
-import ai.binah.sdk.api.vital_signs.VitalSignsListener;
-import ai.binah.sdk.api.vital_signs.VitalSignsResults;
-import ai.binah.sdk.api.vital_signs.vitals.SNSZone;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignBloodPressure;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignLFHF;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignMeanRRI;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignOxygenSaturation;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignPNSIndex;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignPNSZone;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignPRQ;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignPulseRate;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignRMSSD;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignRRI;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignRespirationRate;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignSD1;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignSD2;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignSDNN;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignSNSIndex;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignSNSZone;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignStressIndex;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignStressLevel;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignWellnessIndex;
-import ai.binah.sdk.api.vital_signs.vitals.VitalSignWellnessLevel;
-import ai.binah.sdk.session.FaceSessionBuilder;
 
-/**
- * This class echoes a string called from JavaScript.
- */
 public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePreviewListener {
   private static final String TAG = "BinahAi";
   private Session mSession;
-  private static final long MEASUREMENT_DURATION = 60;
+  private static final long MEASUREMENT_DURATION = 120;
 
   private static final String START_CAMERA = "startCamera";
   private static final String START_SCAN = "startScan";
@@ -88,7 +46,11 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
     if (START_CAMERA.equals(action)){
-      return startCamera(callbackContext);
+      String licenseKey = args.getString(0);
+      String sex = args.getString(1);
+      Double age = args.getDouble(2);
+      Double weight = args.getDouble(3);
+      return startCamera(licenseKey, sex, age, weight, callbackContext);
     }else if(START_SCAN.equals(action)){
       return startScan(callbackContext);
     }else if(STOP_SCAN.equals(action)){
@@ -99,11 +61,27 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return false;
   }
 
-  private boolean startCamera(CallbackContext callbackContext){
+  private boolean startCamera(String licenseKey, String sex, Double age, Double weight, CallbackContext callbackContext){
     startCameraCallbackContext = callbackContext;
     final float opacity = Float.parseFloat("1");
     fragment = new CameraActivity();
     fragment.setEventListener(this);
+    fragment.licenseKey = licenseKey;
+    fragment.age = age;
+    fragment.weight = weight;
+    Sex sSex;
+    switch (sex){
+      case "MALE":
+        sSex = Sex.MALE;
+        break;
+      case  "FEMALE":
+        sSex = Sex.FEMALE;
+        break;
+      default:
+        sSex = Sex.UNSPECIFIED;
+        break;
+    }
+    fragment.sex = sSex;
 
     cordova.getActivity().runOnUiThread(new Runnable() {
       @Override
@@ -175,7 +153,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   private boolean stopScan(CallbackContext callbackContext){
     stopScanCallbackContext = callbackContext;
     stopSession();
-
+    stopScanCallbackContext.success("SCAN STOPPED");
     return true;
   }
 
@@ -191,112 +169,25 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   }
 
   @Override
-  public void onStartScan(VitalSign vitalSign) {
-    JSONObject result = new JSONObject();
-    try {
-      if (vitalSign.getType() == VitalSignTypes.PULSE_RATE) {
-        VitalSignPulseRate pulseRate = (VitalSignPulseRate) vitalSign;
-        Log.d(TAG,"PULSE RATE: " + pulseRate.getValue().toString());
-        result.put("pulseRate", pulseRate.getValue());
-      }
-      if (vitalSign.getType() == VitalSignTypes.RESPIRATION_RATE) {
-        VitalSignRespirationRate respirationRate = (VitalSignRespirationRate) vitalSign;
-        Log.d(TAG,"RESPIRATION RATE: " + respirationRate.getValue().toString());
-        result.put("respirationRate", respirationRate.getValue());
-      }
-      if (vitalSign.getType() == VitalSignTypes.OXYGEN_SATURATION) {
-        VitalSignOxygenSaturation oxygenSaturation = (VitalSignOxygenSaturation) vitalSign;
-        Log.d(TAG,"OXYGEN SATURATION: " + oxygenSaturation.getValue().toString());
-        result.put("oxygenSaturation", oxygenSaturation.getValue());
-      }
-    } catch (JSONException e) {
-      e.printStackTrace();
-    }
-
-    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, result);
+  public void onStartScan(JSONObject vitalSign) {
+    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, vitalSign);
     pluginResult.setKeepCallback(true);
     startScanCallbackContext.sendPluginResult(pluginResult);
   }
 
   @Override
-  public void onFinalResult(VitalSignsResults vitalSignsResults) {
-    VitalSignBloodPressure bloodPressure = (VitalSignBloodPressure) vitalSignsResults.getResult(VitalSignTypes.BLOOD_PRESSURE);
-    VitalSignPulseRate pulseRate = (VitalSignPulseRate) vitalSignsResults.getResult(VitalSignTypes.PULSE_RATE);
-    VitalSignLFHF lfhf = (VitalSignLFHF) vitalSignsResults.getResult(VitalSignTypes.LFHF);
-    VitalSignMeanRRI meanRRI = (VitalSignMeanRRI) vitalSignsResults.getResult(VitalSignTypes.MEAN_RRI);
-    VitalSignOxygenSaturation oxygenSaturation = (VitalSignOxygenSaturation) vitalSignsResults.getResult(VitalSignTypes.OXYGEN_SATURATION);
-    VitalSignPNSIndex pnsIndex = (VitalSignPNSIndex) vitalSignsResults.getResult(VitalSignTypes.PNS_INDEX);
-    VitalSignPNSZone pnsZone = (VitalSignPNSZone) vitalSignsResults.getResult(VitalSignTypes.PNS_ZONE);
-    VitalSignPRQ prq = (VitalSignPRQ) vitalSignsResults.getResult(VitalSignTypes.PRQ);
-    VitalSignRMSSD rmssd = (VitalSignRMSSD) vitalSignsResults.getResult(VitalSignTypes.RMSSD);
-    VitalSignRRI rri = (VitalSignRRI) vitalSignsResults.getResult(VitalSignTypes.RRI);
-    VitalSignRespirationRate respirationRate = (VitalSignRespirationRate) vitalSignsResults.getResult(VitalSignTypes.RESPIRATION_RATE);
-    VitalSignSD1 sd1 = (VitalSignSD1) vitalSignsResults.getResult(VitalSignTypes.SD1);
-    VitalSignSD2 sd2 = (VitalSignSD2) vitalSignsResults.getResult(VitalSignTypes.SD2);
-    VitalSignSDNN sdnn = (VitalSignSDNN) vitalSignsResults.getResult(VitalSignTypes.SDNN);
-    VitalSignSNSIndex snsIndex = (VitalSignSNSIndex) vitalSignsResults.getResult(VitalSignTypes.SNS_INDEX);
-    VitalSignSNSZone snsZone = (VitalSignSNSZone)vitalSignsResults.getResult(VitalSignTypes.SNS_ZONE);
-    VitalSignStressLevel stressLevel = (VitalSignStressLevel) vitalSignsResults.getResult(VitalSignTypes.STRESS_LEVEL);
-    VitalSignStressIndex stressIndex = (VitalSignStressIndex) vitalSignsResults.getResult(VitalSignTypes.STRESS_INDEX);
-    VitalSignWellnessIndex wellnessIndex = (VitalSignWellnessIndex) vitalSignsResults.getResult(VitalSignTypes.WELLNESS_INDEX);
-    VitalSignWellnessLevel wellnessLevel = (VitalSignWellnessLevel) vitalSignsResults.getResult(VitalSignTypes.WELLNESS_LEVEL);
-
-    String pulseRateValue = pulseRate != null ? pulseRate.getValue().toString() : "N/A";
-    String bloodPressureValue = bloodPressure != null ? bloodPressure.getValue().getSystolic() + "/" + bloodPressure.getValue().getDiastolic() : "N/A";
-    String lfhfValue = lfhf != null ? lfhf.getValue().toString() : "N/A";
-    String meanRRIValue = meanRRI != null ? meanRRI.getValue().toString() : "N/A";
-    String oxygenSaturationValue = oxygenSaturation != null ? oxygenSaturation.getValue().toString() : "N/A";
-    String pnsIndexValue = pnsIndex != null ? pnsIndex.getValue().toString() : "N/A";
-    String pnsZoneValue = pnsZone != null ? pnsZone.getValue().toString() : "N/A";
-    String prqValue = prq != null ? prq.getValue().toString() : "N/A";
-    String rmssdValue = rmssd != null ? rmssd.getValue().toString() : "N/A";
-    String rriValue = rri != null ? rri.getValue().toString() : "N/A";
-    String respirationRateValue = respirationRate != null ? respirationRate.getValue().toString() : "N/A";
-    String sd1Value = sd1 != null ? sd1.getValue().toString() : "N/A";
-    String sd2Value = sd2 != null ? sd2.getValue().toString() : "N/A";
-    String sdnnValue = sdnn != null ? sdnn.getValue().toString() : "N/A";
-    String snsIndexValue = snsIndex != null ? snsIndex.getValue().toString() : "N/A";
-    String snsZoneValue = snsZone != null ? snsZone.getValue().toString() : "N/A";
-    String stressLevelValue = stressLevel != null ? stressLevel.getValue().toString() : "N/A";
-    String stressIndexValue = stressIndex != null ? stressIndex.getValue().toString() : "N/A";
-    String wellnessIndexValue = wellnessIndex != null ? wellnessIndex.getValue().toString() : "N/A";
-    String wellnessLevelValue = wellnessLevel != null ? wellnessLevel.getValue().toString() : "N/A";
-
-    JSONObject finalResult = new JSONObject();
-    try {
-      finalResult.put("pulseRate", pulseRateValue);
-      finalResult.put("bloodPressure", bloodPressureValue);
-      finalResult.put("lfhf", lfhfValue);
-      finalResult.put("meanRRI", meanRRIValue);
-      finalResult.put("oxygenSaturation", oxygenSaturationValue);
-      finalResult.put("pnsIndex", pnsIndexValue);
-      finalResult.put("pnsZone", pnsZoneValue);
-      finalResult.put("prq", prqValue);
-      finalResult.put("rmssd", rmssdValue);
-      finalResult.put("rri", rriValue);
-      finalResult.put("respirationRate", respirationRateValue);
-      finalResult.put("sd1", sd1Value);
-      finalResult.put("sd2", sd2Value);
-      finalResult.put("sdnn", sdnnValue);
-      finalResult.put("snsIndex", snsIndexValue);
-      finalResult.put("snsZone", snsZoneValue);
-      finalResult.put("stressLevel", stressLevelValue);
-      finalResult.put("stressIndex", stressIndexValue);
-      finalResult.put("wellnessIndex", wellnessIndexValue);
-      finalResult.put("wellnessLevel", wellnessLevelValue);
-    } catch (JSONException e) {
-      e.printStackTrace();
+  public void onFinalResult(JSONObject vitalSignsResults) {
+    if(imageValidationCallbackContext != null){
+      PluginResult imageValidationPluginResult = new PluginResult(PluginResult.Status.OK);
+      imageValidationPluginResult.setKeepCallback(false);
+      imageValidationCallbackContext.sendPluginResult(imageValidationPluginResult);
     }
 
-    PluginResult imageValidationPluginResult = new PluginResult(PluginResult.Status.OK);
-    imageValidationPluginResult.setKeepCallback(false);
-    imageValidationCallbackContext.sendPluginResult(imageValidationPluginResult);
-
-    PluginResult startScanPluginResult = new PluginResult(PluginResult.Status.OK);
-    startScanPluginResult.setKeepCallback(false);
-    startScanCallbackContext.sendPluginResult(startScanPluginResult);
-
-    stopScanCallbackContext.success(finalResult);
+    if(startScanCallbackContext != null){
+      PluginResult startScanPluginResult = new PluginResult(PluginResult.Status.OK, vitalSignsResults);
+      startScanPluginResult.setKeepCallback(false);
+      startScanCallbackContext.sendPluginResult(startScanPluginResult);
+    }
   }
 
   @Override
@@ -323,7 +214,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
         mSession.start(MEASUREMENT_DURATION);
       }
     } catch (HealthMonitorException e) {
-      showAlert(null, "Error: " + e.getErrorCode());
+      Log.d(TAG, "Error: " + e.getErrorCode());
     }
   }
 
@@ -336,16 +227,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
         mSession.stop();
       }
     }catch(HealthMonitorException e){
-      showAlert(null, "Error: " + e.getErrorCode());
+      Log.d(TAG, "Error: " + e.getErrorCode());
     }
-  }
-
-  private void showAlert(String title, String message) {
-    new AlertDialog.Builder(cordova.getActivity())
-      .setTitle(title)
-      .setMessage(message)
-      .setPositiveButton("OK", null)
-      .setCancelable(false)
-      .show();
   }
 }
