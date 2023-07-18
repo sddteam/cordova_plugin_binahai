@@ -1,6 +1,7 @@
 ---
 title: BinahAi
 description: Integrate BinahAi SDK to cordova.
+sdk version: 5.0.5
 ---
 <!--
 # license: Licensed to the Apache Software Foundation (ASF) under one
