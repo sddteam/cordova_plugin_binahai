@@ -27,7 +27,7 @@ sdk version: 5.0.5
 
 ## How to use
 
-Import `BinahAi` in your component file:
+Import `BinahAi` in your component file: 
 
 ```ts
 import { BinahAi } from '@awesome-cordova-plugins/binah-ai/ngx';
