@@ -80,10 +80,12 @@ import com.binahptt.bastion.R;
 
 public class CameraActivity extends Fragment implements ImageListener, SessionInfoListener, VitalSignsListener{
   public interface ImagePreviewListener{
-    void onSessionCreated(Session session);
     void onStartScan(JSONObject vitalSign);
     void onFinalResult(JSONArray vitalSignsResults);
     void onImageValidation(JSONObject imageValidationCode);
+    void onSessionState(String sessionState);
+    void onCameraStarted(Session session);
+    void onCameraError(HealthMonitorException e);
   }
   private ImagePreviewListener eventListener;
   private static final String TAG = "CameraActivity";
@@ -117,9 +119,8 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   }
 
   @Override
-  public void onStart() {
-    Log.d(TAG, "ON STARTING");
-    super.onStart();
+  public void onResume() {
+    super.onResume();
     int permissionStatus = ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.CAMERA);
     if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
       createSession();
@@ -129,24 +130,17 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   }
 
   @Override
-  public void onStop() {
-    Log.d(TAG, "ON STOPPING");
-    super.onStop();
+  public void onPause() {
+    super.onPause();
     if (mSession != null) {
-      Log.d(TAG, mSession.getState().name());
       mSession.terminate();
       mSession = null;
     }
   }
 
-
-
   @Override
   public void onImage(ImageData imageData) {
     getActivity().runOnUiThread(() -> {
-
-
-
       Canvas canvas = _cameraView.lockCanvas();
       if (canvas == null) {
         return;
@@ -236,22 +230,17 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   }
 
   private void createSession() {
-    Log.d(TAG, "CREATING SESSION");
     LicenseDetails licenseDetails = new LicenseDetails(licenseKey);
     try {
-      if(mSession != null){
-        mSession.terminate();
-        mSession = null;
-        Log.d(TAG, "TERMINATING");
-      }
       mSession = new FaceSessionBuilder(getActivity().getApplicationContext())
         .withImageListener(this)
         .withVitalSignsListener(this)
         .withSessionInfoListener(this)
         .build(licenseDetails);
-      eventListener.onSessionCreated(mSession);
+      eventListener.onCameraStarted(mSession);
     } catch (HealthMonitorException e) {
-      showAlert(null, "Error(CREATE SESSION): " + e.getErrorCode());
+      showAlert(null, "Create session error: " + e.getErrorCode());
+      eventListener.onCameraError(e);
     }
   }
 
@@ -268,6 +257,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   public void onSessionStateChange(SessionState sessionState) {
     getActivity().runOnUiThread(() -> {
       Toast.makeText(getContext(), "Session state: " + sessionState.name(), Toast.LENGTH_SHORT).show();
+      //onSessionStateChange(SessionState.valueOf(sessionState.name()));
     });
   }
 

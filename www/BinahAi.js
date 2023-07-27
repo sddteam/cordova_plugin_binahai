@@ -30,7 +30,7 @@ BinahAi.startCamera = function (options, onSuccess, onError) {
 
 BinahAi.stopCamera = function(onSuccess, onError){
     exec(onSuccess, onError, PLUGIN_NAME, 'stopCamera', []);
-}
+};
 
 BinahAi.startScan = function (onSuccess, onError) {
     exec(onSuccess, onError, PLUGIN_NAME, 'startScan', []);
@@ -42,6 +42,10 @@ BinahAi.stopScan = function (onSuccess, onError) {
 
 BinahAi.imageValidation = function (onSuccess, onError) {
     exec(onSuccess, onError, PLUGIN_NAME, 'imageValidation', []);
+};
+
+BinahAi.getSessionState = function (onSuccess, onError) {
+    exec(onSuccess, onError, PLUGIN_NAME, 'getSessionState', []);
 };
 
 module.exports = BinahAi;

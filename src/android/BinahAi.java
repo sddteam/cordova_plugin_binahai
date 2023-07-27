@@ -34,12 +34,14 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   private static final String START_SCAN = "startScan";
   private static final String STOP_SCAN = "stopScan";
   private static final String IMAGE_VALIDATION = "imageValidation";
+  private static final String GET_SESSION_STATE = "getSessionState";
 
   private CallbackContext startCameraCallbackContext;
   private CallbackContext stopCameraCallbackContext;
   private CallbackContext startScanCallbackContext;
   private CallbackContext stopScanCallbackContext;
   private CallbackContext imageValidationCallbackContext;
+  private CallbackContext getSessionStateCallbackContext;
 
   private int containerViewId = 20;
   private boolean toBack = true;
@@ -66,42 +68,10 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       return stopScan(callbackContext);
     }else if(IMAGE_VALIDATION.equals(action)){
       return imageValidation(callbackContext);
+    }else if(GET_SESSION_STATE.equals(action)){
+      return getSessionState(callbackContext);
     }
     return false;
-  }
-
-  @Override
-  public void onStop() {
-    Log.d(TAG, "MAIN: ON STOPPING");
-    super.onStop();
-    if(mSession != null){
-      Log.d(TAG, "MAIN: SESSION NOT NULL");
-      mSession.terminate();
-      mSession = null;
-    }
-  }
-
-  public boolean stopCamera(CallbackContext callbackContext){
-    if(webViewParent != null){
-      cordova.getActivity().runOnUiThread(new Runnable() {
-        @Override
-        public void run() {
-          ((ViewGroup)webView.getView()).bringToFront();
-          webViewParent = null;
-        }
-      });
-    }
-
-    if(this.hasView(callbackContext) == false){
-      return true;
-    }
-
-    FragmentManager fragmentManager = cordova.getActivity().getSupportFragmentManager();
-    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-    fragmentTransaction.remove(fragment);
-    fragmentTransaction.commit();
-
-    return true;
   }
 
   private boolean startCamera(String licenseKey, CallbackContext callbackContext){
@@ -171,17 +141,61 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return true;
   }
 
+  public boolean stopCamera(CallbackContext callbackContext){
+    if(webViewParent != null){
+      cordova.getActivity().runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          ((ViewGroup)webView.getView()).bringToFront();
+          webViewParent = null;
+        }
+      });
+    }
+
+    if(this.hasView(callbackContext) == false){
+      return true;
+    }
+
+    FragmentManager fragmentManager = cordova.getActivity().getSupportFragmentManager();
+    FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+    fragmentTransaction.remove(fragment);
+    fragmentTransaction.commit();
+
+    callbackContext.success();
+    return true;
+  }
+
   private boolean startScan(CallbackContext callbackContext) {
-    startScanCallbackContext = callbackContext;
-    startSession();
+    if (mSession == null) {
+      return false;
+    }
+    try {
+      if (mSession.getState() == SessionState.READY) {
+        startScanCallbackContext = callbackContext;
+        mSession.start(MEASUREMENT_DURATION);
+      }
+    } catch (HealthMonitorException e) {
+      Log.d(TAG, "Start scan error: " + e.getErrorCode());
+      startScanCallbackContext.error("Start scan error: " + e.getErrorCode());
+    }
 
     return true;
   }
 
   private boolean stopScan(CallbackContext callbackContext){
-    stopScanCallbackContext = callbackContext;
-    stopSession();
-    stopScanCallbackContext.success("SCAN STOPPED");
+    if(mSession == null){
+      return false;
+    }
+    try{
+      if(mSession.getState() != SessionState.READY){
+        stopScanCallbackContext = callbackContext;
+        mSession.stop();
+        stopScanCallbackContext.success();
+      }
+    }catch(HealthMonitorException e){
+      Log.d(TAG, "Stop scan error: " + e.getErrorCode());
+      stopScanCallbackContext.error("Stop scan error: " + e.getErrorCode());
+    }
     return true;
   }
 
@@ -191,9 +205,10 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return true;
   }
 
-  @Override
-  public void onSessionCreated(Session session) {
-    this.mSession = session;
+  private boolean getSessionState(CallbackContext callbackContext){
+    getSessionStateCallbackContext = callbackContext;
+
+    return true;
   }
 
   @Override
@@ -211,6 +226,12 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       imageValidationCallbackContext.sendPluginResult(imageValidationPluginResult);
     }
 
+    if(getSessionStateCallbackContext != null){
+      PluginResult getSessionStatePluginResult = new PluginResult(PluginResult.Status.OK);
+      getSessionStatePluginResult.setKeepCallback(false);
+      getSessionStateCallbackContext.sendPluginResult(getSessionStatePluginResult);
+    }
+
     if(startScanCallbackContext != null){
       PluginResult startScanPluginResult = new PluginResult(PluginResult.Status.OK, vitalSignsResults);
       startScanPluginResult.setKeepCallback(false);
@@ -223,6 +244,33 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, imageErrorCode);
     pluginResult.setKeepCallback(true);
     imageValidationCallbackContext.sendPluginResult(pluginResult);
+  }
+
+  @Override
+  public void onSessionState(String sessionState) {
+    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, sessionState);
+    pluginResult.setKeepCallback(true);
+    getSessionStateCallbackContext.sendPluginResult(pluginResult);
+  }
+
+  @Override
+  public void onCameraStarted(Session session) {
+    Log.d(TAG, "Camera started");
+
+    if(this.mSession == null){
+      this.mSession = session;
+    }
+
+    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, "Camera started");
+    pluginResult.setKeepCallback(false);
+    startCameraCallbackContext.sendPluginResult(pluginResult);
+  }
+
+  @Override
+  public void onCameraError(HealthMonitorException e) {
+    Log.d(TAG, "Start camera error: " + e.getErrorCode());
+
+    startCameraCallbackContext.error("Start camera error: " + e.getErrorCode());
   }
 
   private void startSession() {
