@@ -76,7 +76,7 @@ import ai.binah.sdk.api.vital_signs.vitals.VitalSignStressLevel;
 import ai.binah.sdk.api.vital_signs.vitals.VitalSignWellnessIndex;
 import ai.binah.sdk.api.vital_signs.vitals.VitalSignWellnessLevel;
 import ai.binah.sdk.session.FaceSessionBuilder;
-import io.ionic.starter.R;
+import com.binahptt.bastion.R;
 
 public class CameraActivity extends Fragment implements ImageListener, SessionInfoListener, VitalSignsListener{
   public interface ImagePreviewListener{
