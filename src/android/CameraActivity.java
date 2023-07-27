@@ -266,7 +266,9 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
 
   @Override
   public void onSessionStateChange(SessionState sessionState) {
-
+    getActivity().runOnUiThread(() -> {
+      Toast.makeText(getContext(), "Session state: " + sessionState.name(), Toast.LENGTH_SHORT).show();
+    });
   }
 
   @Override

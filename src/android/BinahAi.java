@@ -30,11 +30,13 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   private static final long MEASUREMENT_DURATION = 120;
 
   private static final String START_CAMERA = "startCamera";
+  private static final String STOP_CAMERA = "stopCamera";
   private static final String START_SCAN = "startScan";
   private static final String STOP_SCAN = "stopScan";
   private static final String IMAGE_VALIDATION = "imageValidation";
 
   private CallbackContext startCameraCallbackContext;
+  private CallbackContext stopCameraCallbackContext;
   private CallbackContext startScanCallbackContext;
   private CallbackContext stopScanCallbackContext;
   private CallbackContext imageValidationCallbackContext;
@@ -56,6 +58,8 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
         }
       });
       return true;
+    }else if(STOP_CAMERA.equals(action)){
+      return stopCamera(callbackContext);
     }else if(START_SCAN.equals(action)){
       return startScan(callbackContext);
     }else if(STOP_SCAN.equals(action)){
@@ -72,13 +76,12 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     super.onStop();
     if(mSession != null){
       Log.d(TAG, "MAIN: SESSION NOT NULL");
-      stopCamera();
       mSession.terminate();
       mSession = null;
     }
   }
 
-  public void stopCamera(){
+  public boolean stopCamera(CallbackContext callbackContext){
     if(webViewParent != null){
       cordova.getActivity().runOnUiThread(new Runnable() {
         @Override
@@ -89,23 +92,14 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       });
     }
 
-//    if(this.hasView(callbackContext) == false){
-//      return true;
-//    }
+    if(this.hasView(callbackContext) == false){
+      return true;
+    }
 
     FragmentManager fragmentManager = cordova.getActivity().getSupportFragmentManager();
     FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
     fragmentTransaction.remove(fragment);
     fragmentTransaction.commit();
-
-    //return true;
-  }
-
-  private boolean hasView(CallbackContext callbackContext){
-    if(fragment == null){
-      callbackContext.error("No Preview");
-      return false;
-    }
 
     return true;
   }
@@ -222,11 +216,6 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       startScanPluginResult.setKeepCallback(false);
       startScanCallbackContext.sendPluginResult(startScanPluginResult);
     }
-
-    if(mSession != null){
-      mSession.terminate();
-      mSession = null;
-    }
   }
 
   @Override
@@ -263,5 +252,12 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     }
   }
 
+  private boolean hasView(CallbackContext callbackContext){
+    if(fragment == null){
+      callbackContext.error("No Preview");
+      return false;
+    }
 
+    return true;
+  }
 }
