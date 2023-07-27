@@ -1,5 +1,6 @@
 package inc.bastion.binahai;
 
+import android.accessibilityservice.AccessibilityService;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -22,6 +23,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import org.apache.cordova.CallbackContext;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -47,6 +50,7 @@ import ai.binah.sdk.api.session.SessionState;
 import ai.binah.sdk.api.session.demographics.Sex;
 import ai.binah.sdk.api.session.demographics.SubjectDemographic;
 import ai.binah.sdk.api.vital_signs.VitalSign;
+import ai.binah.sdk.api.vital_signs.VitalSignConfidence;
 import ai.binah.sdk.api.vital_signs.VitalSignTypes;
 import ai.binah.sdk.api.vital_signs.VitalSignsListener;
 import ai.binah.sdk.api.vital_signs.VitalSignsResults;
@@ -78,8 +82,8 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   public interface ImagePreviewListener{
     void onSessionCreated(Session session);
     void onStartScan(JSONObject vitalSign);
-    void onFinalResult(JSONObject vitalSignsResults);
-    void onImageValidation(int errorCode);
+    void onFinalResult(JSONArray vitalSignsResults);
+    void onImageValidation(JSONObject imageValidationCode);
   }
   private ImagePreviewListener eventListener;
   private static final String TAG = "CameraActivity";
@@ -87,9 +91,6 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   private static final int PERMISSION_REQUEST_CODE = 12345;
   private static final String LICENSE_KEY = "668765-6009B5-426FAD-D62FC0-D89858-19B9FF";
   public String licenseKey;
-  public Sex sex;
-  public Double age;
-  public Double weight;
 
   private Session mSession;
   private Bitmap mFaceDetection;
@@ -117,6 +118,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
 
   @Override
   public void onStart() {
+    Log.d(TAG, "ON STARTING");
     super.onStart();
     int permissionStatus = ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.CAMERA);
     if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
@@ -128,20 +130,23 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
 
   @Override
   public void onStop() {
+    Log.d(TAG, "ON STOPPING");
     super.onStop();
     if (mSession != null) {
+      Log.d(TAG, mSession.getState().name());
       mSession.terminate();
       mSession = null;
     }
   }
 
+
+
   @Override
   public void onImage(ImageData imageData) {
     getActivity().runOnUiThread(() -> {
-      if (imageData.getImageValidity() != ImageValidity.VALID) {
-        Log.i(TAG, "Image Validity Error: "+ imageData.getImageValidity());
-        eventListener.onImageValidation(imageData.getImageValidity());
-      }
+
+
+
       Canvas canvas = _cameraView.lockCanvas();
       if (canvas == null) {
         return;
@@ -159,6 +164,23 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
       //Drawing the face detection (if not null..)
       Rect roi = imageData.getROI();
       if (roi != null) {
+        //Log.d(TAG, "ROI: TOP: " + roi.top + "RIGHT: " + roi.right + "BOTTOM: " + roi.bottom + "LEFT: " + roi.left);
+        JSONObject imageErrorCode = new JSONObject();
+        try {
+          if (imageData.getImageValidity() != ImageValidity.VALID) {
+            Log.i(TAG, "Image Validity Error: "+ imageData.getImageValidity());
+            imageErrorCode.put("imageValidationError", imageData.getImageValidity());
+          }else{
+            if(isInRanged(roi)){
+              Log.i(TAG, "Image Validity Error: "+ imageData.getImageValidity());
+              imageErrorCode.put("imageValidationError", imageData.getImageValidity());
+            }
+          }
+          eventListener.onImageValidation(imageErrorCode);
+        }catch (JSONException e){
+          e.printStackTrace();
+        }
+
         //First we scale the SDK face detection rectangle to fit the TextureView size
         RectF targetRect = new RectF(roi);
         Matrix m = new Matrix();
@@ -174,6 +196,20 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
 
       _cameraView.unlockCanvasAndPost(canvas);
     });
+  }
+
+  public boolean isInRanged(Rect roi){
+    int min = 20;
+    int max = 10;
+    Rect rect = new Rect(120, 130, 360, 455);
+
+    boolean topDiff = roi.top <= Math.abs(rect.top + max) && roi.top >= Math.abs(rect.top - min);
+    boolean leftDiff = roi.left <= Math.abs(rect.left + max) && roi.left >= Math.abs(rect.left - min);
+    boolean rightDiff = roi.right <= Math.abs(rect.right + max) && roi.right >= Math.abs(rect.right - min);
+    boolean bottomDiff = roi.bottom <= Math.abs(rect.bottom + max) && roi.bottom >= Math.abs(rect.bottom - min);
+
+    //Log.d(TAG, "ROI: " + roi + " / " + String.valueOf(topDiff) + String.valueOf(leftDiff) + String.valueOf(rightDiff) + String.valueOf(bottomDiff));
+    return topDiff && leftDiff && rightDiff && bottomDiff;
   }
 
   private void initUi(){
@@ -200,19 +236,22 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   }
 
   private void createSession() {
+    Log.d(TAG, "CREATING SESSION");
     LicenseDetails licenseDetails = new LicenseDetails(licenseKey);
     try {
-      SubjectDemographic subjectDemographic = new SubjectDemographic(sex, age, weight);
+      if(mSession != null){
+        mSession.terminate();
+        mSession = null;
+        Log.d(TAG, "TERMINATING");
+      }
       mSession = new FaceSessionBuilder(getActivity().getApplicationContext())
-        .withSubjectDemographic(subjectDemographic)
         .withImageListener(this)
         .withVitalSignsListener(this)
         .withSessionInfoListener(this)
         .build(licenseDetails);
-
       eventListener.onSessionCreated(mSession);
     } catch (HealthMonitorException e) {
-      showAlert(null, "Error: " + e.getErrorCode());
+      showAlert(null, "Error(CREATE SESSION): " + e.getErrorCode());
     }
   }
 
@@ -266,20 +305,18 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   @Override
   public void onEnabledVitalSigns(SessionEnabledVitalSigns enabledVitalSigns) {
    getActivity().runOnUiThread(() -> {
-
-
      for (int vs: VitalSignTypes.all()) {
        // Checking if pulse rate is enabled
-       Log.i("ENABLED_VITALS", "Is "+ vs +" enabled: " + enabledVitalSigns.isEnabled(vs));
+       //Log.i("ENABLED_VITALS", "Is "+ vs +" enabled: " + enabledVitalSigns.isEnabled(vs));
 
        // Checking if pulse rate is enabled for the specific device:
-       Log.i("ENABLED_VITALS", "Is "+ vs +" device enabled: " + enabledVitalSigns.isDeviceEnabled(vs));
+       //Log.i("ENABLED_VITALS", "Is "+ vs +" device enabled: " + enabledVitalSigns.isDeviceEnabled(vs));
 
        // Checking if pulse rate is enabled for the measurement mode:
-       Log.i("ENABLED_VITALS", "Is "+ vs +" mode enabled: " + enabledVitalSigns.isMeasurementModeEnabled(vs));
+       //Log.i("ENABLED_VITALS", "Is "+ vs +" mode enabled: " + enabledVitalSigns.isMeasurementModeEnabled(vs));
 
        // Checking if pulse rate is enabled for the license:
-       Log.i("ENABLED_VITALS", "Is "+ vs +" license enabled: " + enabledVitalSigns.isLicenseEnabled(vs));
+       //Log.i("ENABLED_VITALS", "Is "+ vs +" license enabled: " + enabledVitalSigns.isLicenseEnabled(vs));
      }
     });
   }
@@ -352,6 +389,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
             case VitalSignTypes.PULSE_RATE:
               VitalSignPulseRate pulseRate = (VitalSignPulseRate) sign;
               String pulseRateValue = pulseRate != null ? pulseRate.getValue().toString() : "N/A";
+              VitalSignConfidence pr = pulseRate.getConfidence();
               signResults.put(signType, pulseRateValue);
               break;
             case VitalSignTypes.LFHF:
@@ -452,18 +490,20 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
           }
         }
 
-        JSONObject finalResult = new JSONObject();
+        JSONArray finalResult = new JSONArray();
         for (Map.Entry<Integer, String> entry : signResults.entrySet()){
           Integer signType = entry.getKey();
           Object signValue = entry.getValue();
           String signTypeName = SignTypeNames.SIGN_TYPE_NAMES.get(signType);
           try {
-            finalResult.put(signTypeName, signValue);
+            JSONObject vitalSignObj = new JSONObject();
+            vitalSignObj.put("name", signTypeName);
+            vitalSignObj.put("value", signValue);
+            finalResult.put(vitalSignObj);
           } catch (JSONException e) {
             e.printStackTrace();
           }
         }
-
         eventListener.onFinalResult(finalResult);
       }
     });
