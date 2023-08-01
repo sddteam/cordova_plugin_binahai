@@ -30,7 +30,7 @@ xmlns:android="http://schemas.android.com/apk/res/android">
     </platform>
     <platform name="ios">
         <config-file parent="/*" target="config.xml">
-            <feature name="BinahAi"></feature>
+            <feature name="BinahAi">
                 <param name="ios-package" value="BinahAi" />
             </feature>
         </config-file>
