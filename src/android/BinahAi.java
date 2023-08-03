@@ -1,5 +1,6 @@
 package inc.bastion.binahai;
 
+import android.os.Build;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -166,9 +167,6 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   }
 
   private boolean startScan(CallbackContext callbackContext) {
-    if (mSession == null) {
-      return false;
-    }
     try {
       if (mSession.getState() == SessionState.READY) {
         startScanCallbackContext = callbackContext;
@@ -243,7 +241,9 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   public void onImageValidation(JSONObject imageErrorCode) {
     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, imageErrorCode);
     pluginResult.setKeepCallback(true);
-    imageValidationCallbackContext.sendPluginResult(pluginResult);
+    if(imageValidationCallbackContext != null){
+      imageValidationCallbackContext.sendPluginResult(pluginResult);
+    }
   }
 
   @Override
@@ -257,9 +257,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   public void onCameraStarted(Session session) {
     Log.d(TAG, "Camera started");
 
-    if(this.mSession == null){
-      this.mSession = session;
-    }
+    this.mSession = session;
 
     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, "Camera started");
     pluginResult.setKeepCallback(false);
@@ -308,4 +306,6 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
 
     return true;
   }
+
+
 }
