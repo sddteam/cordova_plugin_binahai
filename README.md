@@ -3,6 +3,8 @@ title: BinahAi
 description: Integrate BinahAi SDK to cordova.
 sdk version: 5.0.5
 ---
+
+# UPDATED README!!! - 08/03/2023
 <!--
 # license: Licensed to the Apache Software Foundation (ASF) under one
 #         or more contributor license agreements.  See the NOTICE file
@@ -57,7 +59,18 @@ Install `@awesome-cordova-plugins/core` and `@awesome-cordova-plugins/binah-ai` 
 Install the cordova plugin BinahAi (add "#branchName" at the end to install a specific branch)
 
     ionic cordova plugin add https://github.com/marhano/cordova_plugin_binahai.git
-    
+
+## Ionic setup
+Open `config.xml` and add the snippet below.
+
+    <preference name="android-minSdkVersion" value="27" />
+    <preference name="AndroidGradlePluginVersion" value="7.3.1" />
+
+The camera fragment is default to be at the back of the webview so you need to make sure the ion content background is set to transparent.
+
+    ion-content { --background: transparent !important; }
+
+Also remove the dark mode theme from the `variables.scss` file.
 
 ## Properties
 
@@ -66,7 +79,7 @@ Install the cordova plugin BinahAi (add "#branchName" at the end to install a sp
 - startScan
 - stopScan
 - imageValidation
-- getSessionState
+- getSessionState - ondev
 
 # Methods
 
