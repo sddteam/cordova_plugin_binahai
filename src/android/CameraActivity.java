@@ -76,7 +76,6 @@ import ai.binah.sdk.api.vital_signs.vitals.VitalSignStressLevel;
 import ai.binah.sdk.api.vital_signs.vitals.VitalSignWellnessIndex;
 import ai.binah.sdk.api.vital_signs.vitals.VitalSignWellnessLevel;
 import ai.binah.sdk.session.FaceSessionBuilder;
-import com.binahptt.bastion.R;
 
 public class CameraActivity extends Fragment implements ImageListener, SessionInfoListener, VitalSignsListener{
   public interface ImagePreviewListener{
@@ -207,11 +206,13 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   }
 
   private void initUi(){
-    _cameraView = (TextureView) _view.findViewById(R.id.cameraView);
+    int camera_id = getActivity().getResources().getIdentifier("cameraView", "id", appResourcePackage);
+    _cameraView = (TextureView) _view.findViewById(camera_id);
   }
 
   private Bitmap createFaceDetectionBitmap() {
-    Drawable drawable = ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.face_detection);
+    int face_detection_id = getActivity().getResources().getIdentifier("face_detection", "drawable", appResourcePackage);
+    Drawable drawable = ContextCompat.getDrawable(getActivity().getApplicationContext(), face_detection_id);
     if (drawable == null) {
       return null;
     }
@@ -499,7 +500,5 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
         eventListener.onFinalResult(finalResult);
       }
     });
-
   }
-
 }
