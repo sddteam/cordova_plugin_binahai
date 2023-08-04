@@ -199,6 +199,12 @@ this.binahAi.getSessionState().subscribe({
 });
 ```
 
+## getApiLevel([successCallback, errorCallback])
+
+Get device API level.
+
+    var string = binahAi.getApiLevel();
+
 # Sample App
 <a href="https://github.com/marhano/binah_ionic_prototype">binah_ionic_prototype</a> for a complete working Cordova example for Android platforms.
 
