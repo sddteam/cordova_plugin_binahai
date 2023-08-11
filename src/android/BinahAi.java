@@ -1,5 +1,6 @@
 package inc.bastion.binahai;
 
+import android.nfc.Tag;
 import android.os.Build;
 import android.util.Log;
 import android.view.View;
@@ -82,6 +83,8 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     fragment.setEventListener(this);
     fragment.licenseKey = licenseKey;
 
+    int apiLevel = Build.VERSION.SDK_INT;
+    Log.d(TAG, String.valueOf(apiLevel));
     cordova.getActivity().runOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -248,19 +251,19 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
 
   @Override
   public void onSessionState(String sessionState) {
-    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, sessionState);
-    pluginResult.setKeepCallback(true);
-    getSessionStateCallbackContext.sendPluginResult(pluginResult);
+    if(getSessionStateCallbackContext != null){
+      PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, sessionState);
+      pluginResult.setKeepCallback(true);
+      getSessionStateCallbackContext.sendPluginResult(pluginResult);
+    }
   }
 
   @Override
   public void onCameraStarted(Session session) {
-    Log.d(TAG, "Camera started");
-
     this.mSession = session;
 
     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, "Camera started");
-    pluginResult.setKeepCallback(false);
+    pluginResult.setKeepCallback(true);
     startCameraCallbackContext.sendPluginResult(pluginResult);
   }
 
@@ -271,31 +274,18 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     startCameraCallbackContext.error("Start camera error: " + e.getErrorCode());
   }
 
-  private void startSession() {
-    if (mSession == null) {
-      return;
-    }
-
-    try {
-      if (mSession.getState() == SessionState.READY) {
-        mSession.start(MEASUREMENT_DURATION);
-      }
-    } catch (HealthMonitorException e) {
-      Log.d(TAG, "Error: " + e.getErrorCode());
-    }
+  @Override
+  public void onBNHWarning(int warningCode) {
+    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, warningCode);
+    pluginResult.setKeepCallback(true);
+    startCameraCallbackContext.sendPluginResult(pluginResult);
   }
 
-  private void stopSession(){
-    if(mSession == null){
-      return;
-    }
-    try{
-      if(mSession.getState() != SessionState.READY){
-        mSession.stop();
-      }
-    }catch(HealthMonitorException e){
-      Log.d(TAG, "Error: " + e.getErrorCode());
-    }
+  @Override
+  public void onBNHError(int errorCode) {
+    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, errorCode);
+    pluginResult.setKeepCallback(false);
+    startCameraCallbackContext.sendPluginResult(pluginResult);
   }
 
   private boolean hasView(CallbackContext callbackContext){
@@ -306,6 +296,5 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
 
     return true;
   }
-
 
 }

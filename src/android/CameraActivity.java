@@ -85,12 +85,12 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     void onSessionState(String sessionState);
     void onCameraStarted(Session session);
     void onCameraError(HealthMonitorException e);
+    void onBNHWarning(int warningCode);
+    void onBNHError(int errorCode);
   }
   private ImagePreviewListener eventListener;
   private static final String TAG = "CameraActivity";
-
   private static final int PERMISSION_REQUEST_CODE = 12345;
-  private static final String LICENSE_KEY = "668765-6009B5-426FAD-D62FC0-D89858-19B9FF";
   public String licenseKey;
 
   private Session mSession;
@@ -258,14 +258,15 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   public void onSessionStateChange(SessionState sessionState) {
     getActivity().runOnUiThread(() -> {
       //Toast.makeText(getContext(), "Session state: " + sessionState.name(), Toast.LENGTH_SHORT).show();
-      //onSessionStateChange(SessionState.valueOf(sessionState.name()));
+      eventListener.onSessionState(sessionState.name());
     });
   }
 
   @Override
   public void onWarning(WarningData warningData) {
     getActivity().runOnUiThread(() -> {
-      Toast.makeText(getContext(), "Warning: " + warningData.getCode(), Toast.LENGTH_SHORT).show();
+      Toast.makeText(getContext(), "Domain: "+ warningData.getDomain() + " Warning: " + warningData.getCode(), Toast.LENGTH_SHORT).show();
+      eventListener.onBNHWarning(warningData.getCode());
     });
   }
 
@@ -273,6 +274,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   public void onError(ErrorData errorData) {
     getActivity().runOnUiThread(() -> {
       showAlert(null, "Domain: "+ errorData.getDomain() + " Error: "+ errorData.getCode());
+      eventListener.onBNHError(errorData.getCode());
     });
   }
 
@@ -500,5 +502,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
         eventListener.onFinalResult(finalResult);
       }
     });
+
   }
+
 }
