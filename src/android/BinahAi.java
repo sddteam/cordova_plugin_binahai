@@ -55,10 +55,11 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
     if (START_CAMERA.equals(action)){
       String licenseKey = args.getString(0);
+      long duration = args.getLong(1);
       cordova.getThreadPool().execute(new Runnable() {
         @Override
         public void run() {
-          startCamera(licenseKey, callbackContext);
+          startCamera(licenseKey, duration, callbackContext);
         }
       });
       return true;
@@ -76,9 +77,10 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return false;
   }
 
-  private boolean startCamera(String licenseKey, CallbackContext callbackContext){
+  private boolean startCamera(String licenseKey, long duration, CallbackContext callbackContext){
     startCameraCallbackContext = callbackContext;
     final float opacity = Float.parseFloat("1");
+    MEASUREMENT_DURATION = duration;
     fragment = new CameraActivity();
     fragment.setEventListener(this);
     fragment.licenseKey = licenseKey;

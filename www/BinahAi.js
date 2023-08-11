@@ -17,12 +17,14 @@ BinahAi.startCamera = function (options, onSuccess, onError) {
     }
 
     options.licenseKey = options.licenseKey;
+    options.duration = options.duration;
     options.weight = options.weight || 0;
     options.age = options.age || 0;
     options.sex = options.sex || 'UNDEFINED';
 
     exec(onSuccess, onError, PLUGIN_NAME, 'startCamera', [
         options.licenseKey, 
+        options.duration,
         options.sex, 
         options.age, 
         options.weight]);
