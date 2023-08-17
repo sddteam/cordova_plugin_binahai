@@ -29,7 +29,7 @@ import ai.binah.sdk.api.session.demographics.Sex;
 public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePreviewListener {
   private static final String TAG = "BinahAi";
   private Session mSession;
-  private static final long MEASUREMENT_DURATION = 120;
+  private static long MEASUREMENT_DURATION = 120;
 
   private static final String START_CAMERA = "startCamera";
   private static final String STOP_CAMERA = "stopCamera";

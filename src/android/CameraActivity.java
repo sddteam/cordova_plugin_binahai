@@ -161,11 +161,11 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
         JSONObject imageErrorCode = new JSONObject();
         try {
           if (imageData.getImageValidity() != ImageValidity.VALID) {
-            Log.i(TAG, "Image Validity Error: "+ imageData.getImageValidity());
+            //Log.i(TAG, "Image Validity Error: "+ imageData.getImageValidity());
             imageErrorCode.put("imageValidationError", imageData.getImageValidity());
           }else{
             if(isInRanged(roi)){
-              Log.i(TAG, "Image Validity Error: "+ imageData.getImageValidity());
+              //Log.i(TAG, "Image Validity Error: "+ imageData.getImageValidity());
               imageErrorCode.put("imageValidationError", imageData.getImageValidity());
             }
           }
@@ -273,7 +273,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   @Override
   public void onError(ErrorData errorData) {
     getActivity().runOnUiThread(() -> {
-      showAlert(null, "Domain: "+ errorData.getDomain() + " Error: "+ errorData.getCode());
+      //showAlert(null, "Domain: "+ errorData.getDomain() + " Error: "+ errorData.getCode());
       eventListener.onBNHError(errorData.getCode());
     });
   }
