@@ -240,7 +240,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
         .build(licenseDetails);
       eventListener.onCameraStarted(mSession);
     } catch (HealthMonitorException e) {
-      showAlert(null, "Create session error: " + e.getErrorCode());
+      //showAlert(null, "Create session error: " + e.getErrorCode());
       eventListener.onCameraError(e);
     }
   }

@@ -178,8 +178,8 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
         mSession.start(MEASUREMENT_DURATION);
       }
     } catch (HealthMonitorException e) {
-      Log.d(TAG, "Start scan error: " + e.getErrorCode());
-      startScanCallbackContext.error("Start scan error: " + e.getErrorCode());
+      //Log.d(TAG, "Start scan error: " + e.getErrorCode());
+      startScanCallbackContext.error(e.getErrorCode());
     }
 
     return true;
