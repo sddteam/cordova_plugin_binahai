@@ -138,6 +138,17 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   }
 
   @Override
+  public void onDestroy() {
+    super.onDestroy();
+    if(mSession != null){
+      mSession.terminate();
+      mSession = null;
+    }
+    _vitalHolder = null;
+    eventListener = null;
+  }
+
+  @Override
   public void onImage(ImageData imageData) {
     getActivity().runOnUiThread(() -> {
       Canvas canvas = _cameraView.lockCanvas();
@@ -231,6 +242,9 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   }
 
   private void createSession() {
+    if(mSession != null){
+      return;
+    }
     LicenseDetails licenseDetails = new LicenseDetails(licenseKey);
     try {
       mSession = new FaceSessionBuilder(getActivity().getApplicationContext())
