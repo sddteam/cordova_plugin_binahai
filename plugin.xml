@@ -10,7 +10,7 @@ xmlns:android="http://schemas.android.com/apk/res/android">
         <resource-file src="src/android/libs/bnhsdk.aar" target="libs/bnhsdk.aar"/>
         <resource-file src="src/android/activity_camera.xml" target="res/layout/activity_camera.xml" />
         <resource-file src="src/android/face_detection.xml" target="res/drawable/face_detection.xml" />
-        <resource-file src="src/android/camera_theme.xml" target="res/values/camera_theme.xml" />
+        <resource-file src="src/android/binah_camera_theme.xml" target="res/values/binah_camera_theme.xml" />
         <edit-config file="res/values/strings.xml" target="/resources/" mode="append" >
             <string name="start">START</string>
             <string name="stop">STOP</string>
@@ -22,7 +22,7 @@ xmlns:android="http://schemas.android.com/apk/res/android">
             </feature>
         </config-file>
         <config-file parent="/manifest/application" target="AndroidManifest.xml">
-            <activity android:name="inc.bastion.binahai.CameraActivity" android:screenOrientation="portrait" android:theme="@style/CameraTheme" />
+            <activity android:name="inc.bastion.binahai.CameraActivity" android:screenOrientation="portrait" android:theme="@style/BinahCameraTheme" />
         </config-file>
         <source-file src="src/android/BinahAi.java" target-dir="src/inc/bastion/binahai" />
         <source-file src="src/android/CameraActivity.java" target-dir="src/inc/bastion/binahai" />
