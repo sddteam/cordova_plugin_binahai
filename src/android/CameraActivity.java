@@ -87,6 +87,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     void onCameraError(HealthMonitorException e);
     void onBNHWarning(int warningCode);
     void onBNHError(int errorCode);
+    void onFaceValidation(Bitmap image);
   }
   private ImagePreviewListener eventListener;
   private static final String TAG = "CameraActivity";
@@ -169,6 +170,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
       Rect roi = imageData.getROI();
       if (roi != null) {
         //Log.d(TAG, "ROI: TOP: " + roi.top + "RIGHT: " + roi.right + "BOTTOM: " + roi.bottom + "LEFT: " + roi.left);
+        eventListener.onFaceValidation(imageData.getImage());
         JSONObject imageErrorCode = new JSONObject();
         try {
           if (imageData.getImageValidity() != ImageValidity.VALID) {
