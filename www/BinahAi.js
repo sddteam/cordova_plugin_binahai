@@ -50,4 +50,8 @@ BinahAi.getSessionState = function (onSuccess, onError) {
     exec(onSuccess, onError, PLUGIN_NAME, 'getSessionState', []);
 };
 
+BinahAi.userFaceValidation = function (onSuccess, onError) {
+    exec(onSuccess, onError, PLUGIN_NAME, 'userFaceValidation', []);
+};
+
 module.exports = BinahAi;
