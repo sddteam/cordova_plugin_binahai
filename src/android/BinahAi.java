@@ -1,7 +1,9 @@
 package inc.bastion.binahai;
 
+import android.graphics.Bitmap;
 import android.nfc.Tag;
 import android.os.Build;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +20,8 @@ import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.ByteArrayOutputStream;
 
 import javax.security.auth.callback.Callback;
 
@@ -37,6 +41,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   private static final String STOP_SCAN = "stopScan";
   private static final String IMAGE_VALIDATION = "imageValidation";
   private static final String GET_SESSION_STATE = "getSessionState";
+  private static final String USER_FACE_VALIDATION = "userFaceValidation";
 
   private CallbackContext startCameraCallbackContext;
   private CallbackContext stopCameraCallbackContext;
@@ -44,6 +49,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   private CallbackContext stopScanCallbackContext;
   private CallbackContext imageValidationCallbackContext;
   private CallbackContext getSessionStateCallbackContext;
+  private CallbackContext userFaceValidationCallbackContext;
 
   private int containerViewId = 20;
   private boolean toBack = true;
@@ -73,8 +79,16 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       return imageValidation(callbackContext);
     }else if(GET_SESSION_STATE.equals(action)){
       return getSessionState(callbackContext);
+    }else if(USER_FACE_VALIDATION.equals(action)){
+      return userFaceValidation(callbackContext);
     }
     return false;
+  }
+
+  private boolean userFaceValidation(CallbackContext callbackContext){
+    userFaceValidationCallbackContext = callbackContext;
+
+    return true;
   }
 
   private boolean startCamera(String licenseKey, long duration, CallbackContext callbackContext){
@@ -290,6 +304,16 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     startCameraCallbackContext.sendPluginResult(pluginResult);
   }
 
+  @Override
+  public void onFaceValidation(Bitmap image) {
+    if(userFaceValidationCallbackContext != null){
+      String base64Image = bitmapToBase64(image);
+      PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, "image");
+      pluginResult.setKeepCallback(true);
+      userFaceValidationCallbackContext.sendPluginResult(pluginResult);
+    }
+  }
+
   private boolean hasView(CallbackContext callbackContext){
     if(fragment == null){
       callbackContext.error("No Preview");
@@ -297,6 +321,13 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     }
 
     return true;
+  }
+
+  private String bitmapToBase64(Bitmap bitmapImage) {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, baos);
+    byte[] imageBytes = baos.toByteArray();
+    return Base64.encodeToString(imageBytes, Base64.DEFAULT);
   }
 
 }
