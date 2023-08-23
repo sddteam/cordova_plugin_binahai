@@ -9,6 +9,7 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.TextureView;
@@ -32,6 +33,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import ai.binah.sdk.api.HealthMonitorException;
 import ai.binah.sdk.api.SessionEnabledVitalSigns;
@@ -83,8 +86,8 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     void onFinalResult(JSONArray vitalSignsResults);
     void onImageValidation(JSONObject imageValidationCode);
     void onSessionState(String sessionState);
-    void onCameraStarted(Session session);
-    void onCameraError(HealthMonitorException e);
+    void onBNHCameraStarted(Session session);
+    void onBNHCameraError(HealthMonitorException e);
     void onBNHWarning(int warningCode);
     void onBNHError(int errorCode);
     void onFaceValidation(Bitmap image);
@@ -101,6 +104,11 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   private JSONObject _vitalHolder = new JSONObject();
 
   private String appResourcePackage;
+  private Bitmap bitmapImage;
+
+  private Timer imageValidationTimer;
+  private boolean isValidationTimerRunning = false;
+
 
   public void setEventListener(ImagePreviewListener listener){
     eventListener = listener;
@@ -147,6 +155,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     }
     _vitalHolder = null;
     eventListener = null;
+    imageValidationTimer.cancel();
   }
 
   @Override
@@ -158,6 +167,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
       }
       // Drawing the bitmap on the TextureView canvas
       Bitmap image = imageData.getImage();
+      bitmapImage = image;
       canvas.drawBitmap(
         image,
         null,
@@ -170,7 +180,11 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
       Rect roi = imageData.getROI();
       if (roi != null) {
         //Log.d(TAG, "ROI: TOP: " + roi.top + "RIGHT: " + roi.right + "BOTTOM: " + roi.bottom + "LEFT: " + roi.left);
-        eventListener.onFaceValidation(imageData.getImage());
+        if (!isValidationTimerRunning) {
+          isValidationTimerRunning = true;
+          startFaceValidationTimer();
+        }
+        //eventListener.onFaceValidation(imageData.getImage());
         JSONObject imageErrorCode = new JSONObject();
         try {
           if (imageData.getImageValidity() != ImageValidity.VALID) {
@@ -202,6 +216,32 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
 
       _cameraView.unlockCanvasAndPost(canvas);
     });
+
+  }
+
+  public void startFaceValidationTimer() {
+    stopFaceValidationTimer(); // Stop the previous timer if it's running
+
+    imageValidationTimer = new Timer();
+    TimerTask imageValidationTask = new TimerTask() {
+      @Override
+      public void run() {
+        if (bitmapImage != null) {
+          getActivity().runOnUiThread(() -> {
+            eventListener.onFaceValidation(bitmapImage);
+          });
+        }
+      }
+    };
+
+    imageValidationTimer.schedule(imageValidationTask, 0, 10000); // Initial delay of 0, repeat every 10 seconds
+  }
+
+  public void stopFaceValidationTimer() {
+    if (imageValidationTimer != null) {
+      imageValidationTimer.cancel();
+      imageValidationTimer = null;
+    }
   }
 
   public boolean isInRanged(Rect roi){
@@ -254,10 +294,10 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
         .withVitalSignsListener(this)
         .withSessionInfoListener(this)
         .build(licenseDetails);
-      eventListener.onCameraStarted(mSession);
+      eventListener.onBNHCameraStarted(mSession);
     } catch (HealthMonitorException e) {
       //showAlert(null, "Create session error: " + e.getErrorCode());
-      eventListener.onCameraError(e);
+      eventListener.onBNHCameraError(e);
     }
   }
 
