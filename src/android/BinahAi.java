@@ -254,6 +254,12 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       startScanPluginResult.setKeepCallback(false);
       startScanCallbackContext.sendPluginResult(startScanPluginResult);
     }
+
+    if(userFaceValidationCallbackContext != null){
+      PluginResult userFaceValidationPluginResult = new PluginResult(PluginResult.Status.OK);
+      userFaceValidationPluginResult.setKeepCallback(false);
+      userFaceValidationCallbackContext.sendPluginResult(userFaceValidationPluginResult);
+    }
   }
 
   @Override
@@ -275,7 +281,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   }
 
   @Override
-  public void onCameraStarted(Session session) {
+  public void onBNHCameraStarted(Session session) {
     this.mSession = session;
 
     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, "Camera started");
@@ -284,7 +290,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   }
 
   @Override
-  public void onCameraError(HealthMonitorException e) {
+  public void onBNHCameraError(HealthMonitorException e) {
     Log.d(TAG, "Start camera error: " + e.getErrorCode());
 
     startCameraCallbackContext.error("Start camera error: " + e.getErrorCode());
@@ -308,7 +314,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   public void onFaceValidation(Bitmap image) {
     if(userFaceValidationCallbackContext != null){
       String base64Image = bitmapToBase64(image);
-      PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, "image");
+      PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, base64Image);
       pluginResult.setKeepCallback(true);
       userFaceValidationCallbackContext.sendPluginResult(pluginResult);
     }
