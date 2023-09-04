@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>StringsTable</key>
+	<string>Version</string>
+	<key>BNHFullSDKVersion</key>
+	<string>5.0.5.bca1a212</string>
+	<key>BNHVersion</key>
+	<string>5.0.5</string>
+	<key>BNHBuildNumber</key>
+	<string>1</string>
+</dict>
+</plist>
