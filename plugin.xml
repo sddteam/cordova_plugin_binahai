@@ -7,7 +7,7 @@ xmlns:android="http://schemas.android.com/apk/res/android">
         <clobbers target="BinahAi" />
     </js-module>
     <platform name="android">
-        <resource-file src="src/android/libs/bnhsdk.aar" target="libs/bnhsdk.aar"/>
+        <resource-file src="src/android/libs/bnhsdk.aar" target="libs/bnhsdk.aar" />
         <resource-file src="src/android/activity_camera.xml" target="res/layout/activity_camera.xml" />
         <resource-file src="src/android/face_detection.xml" target="res/drawable/face_detection.xml" />
         <resource-file src="src/android/binah_camera_theme.xml" target="res/values/binah_camera_theme.xml" />
@@ -15,7 +15,7 @@ xmlns:android="http://schemas.android.com/apk/res/android">
             <string name="start">START</string>
             <string name="stop">STOP</string>
         </edit-config>
-        <framework src="src/android/binahai.gradle" custom="true" type="gradleReference" />
+        <framework custom="true" src="src/android/binahai.gradle" type="gradleReference" />
         <config-file parent="/*" target="res/xml/config.xml">
             <feature name="BinahAi">
                 <param name="android-package" value="inc.bastion.binahai.BinahAi" />
@@ -27,5 +27,14 @@ xmlns:android="http://schemas.android.com/apk/res/android">
         <source-file src="src/android/BinahAi.java" target-dir="src/inc/bastion/binahai" />
         <source-file src="src/android/CameraActivity.java" target-dir="src/inc/bastion/binahai" />
         <source-file src="src/android/SignTypeNames.java" target-dir="src/inc/bastion/binahai" />
+    </platform>
+    <platform name="ios">
+        <config-file parent="/*" target="config.xml">
+            <feature name="BinahAi">
+                <param name="ios-package" value="BinahAi" />
+            </feature>
+        </config-file>
+        <source-file src="src/ios/BinahAi.m" />
+        <framework src="src/ios/BinahAI.framework" />
     </platform>
 </plugin>

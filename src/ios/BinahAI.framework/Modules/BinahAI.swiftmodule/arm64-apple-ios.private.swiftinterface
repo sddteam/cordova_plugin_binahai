@@ -1,0 +1,1124 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.7.2 (swiftlang-5.7.2.135.5 clang-1400.0.29.51)
+// swift-module-flags: -target arm64-apple-ios11.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name BinahAI
+// swift-module-flags-ignorable: -enable-bare-slash-regex
+import AVFoundation
+@_exported import BinahAI
+import CoreMotion
+import Foundation
+import Security
+import Swift
+import UIKit
+import _Concurrency
+import _StringProcessing
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignSDNN) @objcMembers public class VitalSignSDNN : BinahAI.VitalSignInt {
+  @objc final public let confidence: BinahAI.VitalSignConfidence?
+  @objc deinit
+}
+@objc(BNHAlertData) public protocol AlertData {
+  @objc var domain: Swift.String { get }
+  @objc var code: Swift.Int { get }
+  @objc var additionalInfo: [Swift.String : Any] { get }
+}
+@_hasMissingDesignatedInitializers @objc(BNHLicenseInfo) @objcMembers public class LicenseInfo : ObjectiveC.NSObject {
+  @objc final public let licenseActivationInfo: BinahAI.LicenseActivationInfo
+  @objc final public let licenseOfflineMeasurements: BinahAI.LicenseOfflineMeasurements?
+  @objc deinit
+}
+@objc(BNHWellnessLevel) public enum WellnessLevel : Swift.Int {
+  case unknown
+  case low
+  case medium
+  case high
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+extension BinahAI.WellnessLevel : BinahAI.BNHCustomStringConvertible {
+  public var bnhDescription: Swift.String {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignWellnessIndex) @objcMembers public class VitalSignWellnessIndex : BinahAI.VitalSignInt {
+  @objc deinit
+}
+@objc(BNHCoreMessageType) public enum CoreMessageType : Swift.Int {
+  case pulseRate
+  case respirationRate
+  case oxygenSaturation
+  case bloodPressure
+  case error
+  case warning
+  case reset
+  case done
+  case snr
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+extension BinahAI.CoreMessageType : BinahAI.BNHCustomStringConvertible {
+  public var bnhDescription: Swift.String {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignSNSIndex) @objcMembers public class VitalSignSNSIndex : BinahAI.VitalSignDouble {
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc(BNHAlertCodes) @objcMembers public class AlertCodes : ObjectiveC.NSObject {
+  @objc public static let deviceLowPowerModeEnabledError: Swift.Int
+  @objc public static let deviceTorchUnavailableError: Swift.Int
+  @objc public static let deviceTorchShutDownError: Swift.Int
+  @objc public static let deviceMinimumBatteryLevelError: Swift.Int
+  @objc public static let deviceClockSkewError: Swift.Int
+  @objc public static let cameraNoCameraError: Swift.Int
+  @objc public static let cameraCameraOpenError: Swift.Int
+  @objc public static let cameraCameraMissingPermissionsError: Swift.Int
+  @objc public static let cameraUnexpectedImageDimensionsWarning: Swift.Int
+  @objc public static let licenseActivationLimitReachedError: Swift.Int
+  @objc public static let licenseMeterAttributeUsesLimitReachedError: Swift.Int
+  @objc public static let licenseAuthenticationFailedError: Swift.Int
+  @objc public static let licenseInvalidLicenseKeyError: Swift.Int
+  @objc public static let licenseNetworkIssuesError: Swift.Int
+  @objc public static let licenseSslHandshakeError: Swift.Int
+  @objc public static let licenseInputLicenseKeyEmptyError: Swift.Int
+  @objc public static let licenseInputProductIdIllegalError: Swift.Int
+  @objc public static let licenseCannotOpenFileForReadError: Swift.Int
+  @objc public static let licenseMonthlyUsageTrackingRequiresSyncError: Swift.Int
+  @objc public static let licenseSslHandshakeDeviceDateError: Swift.Int
+  @objc public static let licenseSslHandshakeCertificateExpiredError: Swift.Int
+  @objc public static let licenseMinSdkError: Swift.Int
+  @objc public static let licenseNetworkTimeoutError: Swift.Int
+  @objc public static let measurementMisdetectionDurationExceedsLimitError: Swift.Int
+  @objc public static let measurementInvalidRecentDetectionRateError: Swift.Int
+  @objc public static let measurementLicenseActivationFailedError: Swift.Int
+  @objc public static let measurementTooManyFramesInorderError: Swift.Int
+  @objc public static let measurementMisdetectionDurationExceedsLimitWarning: Swift.Int
+  @objc public static let measurementInvalidRecentFPSRateWarning: Swift.Int
+  @objc public static let measurementMeasurementMisplacedFrameWarning: Swift.Int
+  @objc public static let vitalSignMeasuringWithNoEnabledVitalSignsWarning: Swift.Int
+  @objc public static let sessionIllegalStartCallError: Swift.Int
+  @objc public static let sessionIllegalStopCallError: Swift.Int
+  @objc public static let initializationInvalidProcessingTimeError: Swift.Int
+  @objc public static let initializationRotationAndOrientationMismatch: Swift.Int
+  @objc public static let initializationInvalidLicenseFormat: Swift.Int
+  @objc public static let initializationSdkLoadFailure: Swift.Int
+  @objc public static let initializationUnsupportedUserWeight: Swift.Int
+  @objc public static let initializationUnsupportedUserAge: Swift.Int
+  @objc public static let initializationConcurrentSessionsError: Swift.Int
+  @objc public static let sensorUnsupportedSensorFirmwareVersion: Swift.Int
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @available(iOS 13, *)
+@objc(BNHFaceSessionBuilder) @objcMembers public class FaceSessionBuilder : BinahAI.SessionBuilder {
+  @objc public init()
+  @objc public func withDetectionAlwaysOn(_ detectionOn: Swift.Bool) -> BinahAI.FaceSessionBuilder
+  @objc public func withDeviceOrientation(_ orientation: BinahAI.DeviceOrientation) -> BinahAI.FaceSessionBuilder
+  @objc public func withSubjectDemographic(_ demographic: BinahAI.SubjectDemographic) -> BinahAI.FaceSessionBuilder
+  @objc public func withImageFormatMode(_ imageFormatMode: BinahAI.ImageFormatMode) -> BinahAI.FaceSessionBuilder
+  @objc override public func build(licenseDetails: BinahAI.LicenseDetails) throws -> BinahAI.Session
+  @objc deinit
+}
+@objc(BNHSex) public enum Sex : Swift.Int {
+  case unspecified
+  case male
+  case female
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignSD1) @objcMembers public class VitalSignSD1 : BinahAI.VitalSignInt {
+  @objc deinit
+}
+@objc(BNHSubjectDemographic) @objcMembers public class SubjectDemographic : ObjectiveC.NSObject {
+  @objc final public let sex: BinahAI.Sex
+  @objc final public let age: Foundation.NSNumber?
+  @objc final public let weight: Foundation.NSNumber?
+  @objc public init(sex: BinahAI.Sex = .unspecified, age: Foundation.NSNumber?, weight: Foundation.NSNumber?)
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignSNSZone) @objcMembers public class VitalSignSNSZone : ObjectiveC.NSObject, BinahAI.VitalSign {
+  @objc public var type: BinahAI.VitalSignType {
+    get
+  }
+  @objc final public let value: BinahAI.SNSZone
+  @objc deinit
+}
+extension BinahAI.VitalSignSNSZone : BinahAI.BNHCustomStringConvertible {
+  @objc dynamic public var bnhDescription: Swift.String {
+    @objc get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignMeanRRI) @objcMembers public class VitalSignMeanRRI : BinahAI.VitalSignInt {
+  @objc final public let confidence: BinahAI.VitalSignConfidence?
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc(BNHEnabledVitalSigns) @objcMembers public class EnabledVitalSigns : ObjectiveC.NSObject {
+  @objc final public let enabledVitalSigns: BinahAI.VitalSignType
+  @objc override dynamic public init()
+  @objc public init(enabledVitalSigns: BinahAI.VitalSignType)
+  @objc public init(vitalSignsTypes: [BinahAI.VitalSignType])
+  @objc public func isEnabled(vitalSignType: BinahAI.VitalSignType) -> Swift.Bool
+  @objc deinit
+}
+extension BinahAI.EnabledVitalSigns : BinahAI.BNHCustomStringConvertible {
+  @objc dynamic public var bnhDescription: Swift.String {
+    @objc get
+  }
+}
+@objc(BNHLicenseDetails) @objcMembers public class LicenseDetails : ObjectiveC.NSObject {
+  @objc final public let licenseKey: Swift.String
+  @objc final public let productId: Swift.String?
+  @objc public init(licenseKey: Swift.String, productId: Swift.String?)
+  @objc public init(licenseKey: Swift.String)
+  @objc deinit
+}
+@objc(BNHRRI) @objcMembers public class RRI : ObjectiveC.NSObject {
+  @objc final public let timestamp: Swift.Double
+  @objc final public let interval: Swift.Int
+  @objc public init(timestamp: Swift.Double, interval: Swift.Double)
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignStressIndex) @objcMembers public class VitalSignStressIndex : BinahAI.VitalSignInt {
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignSD2) @objcMembers public class VitalSignSD2 : BinahAI.VitalSignInt {
+  @objc deinit
+}
+@objc(BNHVitalSignConfidence) @objcMembers public class VitalSignConfidence : ObjectiveC.NSObject {
+  @objc final public let level: BinahAI.ConfidenceLevel
+  @objc public init(level: BinahAI.ConfidenceLevel)
+  @objc deinit
+}
+@objc(BNHSessionInfoListener) public protocol SessionInfoListener {
+  @objc func onSessionStateChange(sessionState: BinahAI.SessionState)
+  @objc func onWarning(warningData: BinahAI.WarningData)
+  @objc func onError(errorData: BinahAI.ErrorData)
+  @objc func onLicenseInfo(licenseInfo: BinahAI.LicenseInfo)
+  @objc func onEnabledVitalSigns(enabledVitalSigns: BinahAI.SessionEnabledVitalSigns)
+}
+public enum Device {
+  case iPodTouch5
+  case iPodTouch6
+  case iPodTouch7
+  case iPhone4
+  case iPhone4s
+  case iPhone5
+  case iPhone5c
+  case iPhone5s
+  case iPhone6
+  case iPhone6Plus
+  case iPhone6s
+  case iPhone6sPlus
+  case iPhone7
+  case iPhone7Plus
+  case iPhoneSE
+  case iPhone8
+  case iPhone8Plus
+  case iPhoneX
+  case iPhoneXS
+  case iPhoneXSMax
+  case iPhoneXR
+  case iPhone11
+  case iPhone11Pro
+  case iPhone11ProMax
+  case iPhoneSE2
+  case iPhone12
+  case iPhone12Mini
+  case iPhone12Pro
+  case iPhone12ProMax
+  case iPhone13
+  case iPhone13Mini
+  case iPhone13Pro
+  case iPhone13ProMax
+  case iPhoneSE3
+  case iPhone14
+  case iPhone14Plus
+  case iPhone14Pro
+  case iPhone14ProMax
+  case iPad2
+  case iPad3
+  case iPad4
+  case iPadAir
+  case iPadAir2
+  case iPad5
+  case iPad6
+  case iPadAir3
+  case iPad7
+  case iPad8
+  case iPad9
+  case iPad10
+  case iPadAir4
+  case iPadAir5
+  case iPadMini
+  case iPadMini2
+  case iPadMini3
+  case iPadMini4
+  case iPadMini5
+  case iPadMini6
+  case iPadPro9Inch
+  case iPadPro12Inch
+  case iPadPro12Inch2
+  case iPadPro10Inch
+  case iPadPro11Inch
+  case iPadPro12Inch3
+  case iPadPro11Inch2
+  case iPadPro12Inch4
+  case iPadPro11Inch3
+  case iPadPro12Inch5
+  case iPadPro11Inch4
+  case iPadPro12Inch6
+  case homePod
+  indirect case simulator(BinahAI.Device)
+  case unknown(Swift.String)
+  public static var current: BinahAI.Device {
+    get
+  }
+  public static var identifier: Swift.String
+  public static func mapToDevice(identifier: Swift.String) -> BinahAI.Device
+  public static func realDevice(from device: BinahAI.Device) -> BinahAI.Device
+  public var diagonal: Swift.Double {
+    get
+  }
+  public var screenRatio: (width: Swift.Double, height: Swift.Double) {
+    get
+  }
+  public static var allPods: [BinahAI.Device] {
+    get
+  }
+  public static var allPhones: [BinahAI.Device] {
+    get
+  }
+  public static var allPads: [BinahAI.Device] {
+    get
+  }
+  @available(*, deprecated, renamed: "allDevicesWithSensorHousing")
+  public static var allXSeriesDevices: [BinahAI.Device] {
+    get
+  }
+  public static var allPlusSizedDevices: [BinahAI.Device] {
+    get
+  }
+  public static var allProDevices: [BinahAI.Device] {
+    get
+  }
+  public static var allMiniDevices: [BinahAI.Device] {
+    get
+  }
+  public static var allSimulatorPods: [BinahAI.Device] {
+    get
+  }
+  public static var allSimulatorPhones: [BinahAI.Device] {
+    get
+  }
+  public static var allSimulatorPads: [BinahAI.Device] {
+    get
+  }
+  public static var allSimulatorMiniDevices: [BinahAI.Device] {
+    get
+  }
+  @available(*, deprecated, renamed: "allSimulatorDevicesWithSensorHousing")
+  public static var allSimulatorXSeriesDevices: [BinahAI.Device] {
+    get
+  }
+  public static var allSimulatorPlusSizedDevices: [BinahAI.Device] {
+    get
+  }
+  public static var allSimulatorProDevices: [BinahAI.Device] {
+    get
+  }
+  public var isPod: Swift.Bool {
+    get
+  }
+  public var isPhone: Swift.Bool {
+    get
+  }
+  public var isPad: Swift.Bool {
+    get
+  }
+  public var realDevice: BinahAI.Device {
+    get
+  }
+  public var isZoomed: Swift.Bool? {
+    get
+  }
+  public static var allTouchIDCapableDevices: [BinahAI.Device] {
+    get
+  }
+  public static var allFaceIDCapableDevices: [BinahAI.Device] {
+    get
+  }
+  public static var allBiometricAuthenticationCapableDevices: [BinahAI.Device] {
+    get
+  }
+  public var isTouchIDCapable: Swift.Bool {
+    get
+  }
+  public var isFaceIDCapable: Swift.Bool {
+    get
+  }
+  public var hasBiometricSensor: Swift.Bool {
+    get
+  }
+  public static var allDevicesWithSensorHousing: [BinahAI.Device] {
+    get
+  }
+  public static var allSimulatorDevicesWithSensorHousing: [BinahAI.Device] {
+    get
+  }
+  public var hasSensorHousing: Swift.Bool {
+    get
+  }
+  public static var allDevicesWithRoundedDisplayCorners: [BinahAI.Device] {
+    get
+  }
+  public var hasRoundedDisplayCorners: Swift.Bool {
+    get
+  }
+  public static var allDevicesWith3dTouchSupport: [BinahAI.Device] {
+    get
+  }
+  public var has3dTouchSupport: Swift.Bool {
+    get
+  }
+  public static var allDevicesWithWirelessChargingSupport: [BinahAI.Device] {
+    get
+  }
+  public var supportsWirelessCharging: Swift.Bool {
+    get
+  }
+  public static var allDevicesWithALidarSensor: [BinahAI.Device] {
+    get
+  }
+  public var hasLidarSensor: Swift.Bool {
+    get
+  }
+  public var isCanvas: Swift.Bool? {
+    get
+  }
+  public static var allRealDevices: [BinahAI.Device] {
+    get
+  }
+  public static var allSimulators: [BinahAI.Device] {
+    get
+  }
+  public var isSimulator: Swift.Bool {
+    get
+  }
+  public func isOneOf(_ devices: [BinahAI.Device]) -> Swift.Bool
+  public var name: Swift.String? {
+    get
+  }
+  public var systemName: Swift.String? {
+    get
+  }
+  public var systemVersion: Swift.String? {
+    get
+  }
+  public var model: Swift.String? {
+    get
+  }
+  public var localizedModel: Swift.String? {
+    get
+  }
+  public var ppi: Swift.Int? {
+    get
+  }
+  public var isGuidedAccessSessionActive: Swift.Bool {
+    get
+  }
+  public var screenBrightness: Swift.Int {
+    get
+  }
+}
+extension BinahAI.Device : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+  public var safeDescription: Swift.String {
+    get
+  }
+}
+extension BinahAI.Device : Swift.Equatable {
+  public static func == (lhs: BinahAI.Device, rhs: BinahAI.Device) -> Swift.Bool
+}
+@available(iOS 8.0, watchOS 4.0, *)
+extension BinahAI.Device {
+  public enum BatteryState : Swift.CustomStringConvertible, Swift.Equatable {
+    case full
+    case charging(Swift.Int)
+    case unplugged(Swift.Int)
+    public var lowPowerMode: Swift.Bool {
+      get
+    }
+    public var description: Swift.String {
+      get
+    }
+  }
+  public var batteryState: BinahAI.Device.BatteryState? {
+    get
+  }
+  public var batteryLevel: Swift.Int? {
+    get
+  }
+}
+@available(iOS 8.0, watchOS 4.0, *)
+extension BinahAI.Device.BatteryState : Swift.Comparable {
+  public static func == (lhs: BinahAI.Device.BatteryState, rhs: BinahAI.Device.BatteryState) -> Swift.Bool
+  public static func < (lhs: BinahAI.Device.BatteryState, rhs: BinahAI.Device.BatteryState) -> Swift.Bool
+}
+extension BinahAI.Device {
+  public enum Orientation {
+    case landscape
+    case portrait
+    public static func == (a: BinahAI.Device.Orientation, b: BinahAI.Device.Orientation) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+  public var orientation: BinahAI.Device.Orientation {
+    get
+  }
+}
+extension BinahAI.Device {
+  public static var volumeTotalCapacity: Swift.Int? {
+    get
+  }
+  public static var volumeAvailableCapacity: Swift.Int? {
+    get
+  }
+  @available(iOS 11.0, *)
+  public static var volumeAvailableCapacityForImportantUsage: Swift.Int64? {
+    get
+  }
+  @available(iOS 11.0, *)
+  public static var volumeAvailableCapacityForOpportunisticUsage: Swift.Int64? {
+    get
+  }
+  @available(iOS 11.0, *)
+  public static var volumes: [Foundation.URLResourceKey : Swift.Int64]? {
+    get
+  }
+}
+extension BinahAI.Device {
+  public struct ApplePencilSupport : Swift.OptionSet {
+    public var rawValue: Swift.UInt
+    public init(rawValue: Swift.UInt)
+    public static let firstGeneration: BinahAI.Device.ApplePencilSupport
+    public static let secondGeneration: BinahAI.Device.ApplePencilSupport
+    public typealias ArrayLiteralElement = BinahAI.Device.ApplePencilSupport
+    public typealias Element = BinahAI.Device.ApplePencilSupport
+    public typealias RawValue = Swift.UInt
+  }
+  public static var allApplePencilCapableDevices: [BinahAI.Device] {
+    get
+  }
+  public var applePencilSupport: BinahAI.Device.ApplePencilSupport {
+    get
+  }
+}
+extension BinahAI.Device {
+  public enum CameraType {
+    @available(*, deprecated, renamed: "wide")
+    case normal
+    case wide
+    case telephoto
+    case ultraWide
+    public static func == (a: BinahAI.Device.CameraType, b: BinahAI.Device.CameraType) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+  public var cameras: [BinahAI.Device.CameraType] {
+    get
+  }
+  public static var allDevicesWithCamera: [BinahAI.Device] {
+    get
+  }
+  @available(*, deprecated, renamed: "allDevicesWithWideCamera")
+  public static var allDevicesWithNormalCamera: [BinahAI.Device] {
+    get
+  }
+  public static var allDevicesWithWideCamera: [BinahAI.Device] {
+    get
+  }
+  public static var allDevicesWithTelephotoCamera: [BinahAI.Device] {
+    get
+  }
+  public static var allDevicesWithUltraWideCamera: [BinahAI.Device] {
+    get
+  }
+  public var hasCamera: Swift.Bool {
+    get
+  }
+  @available(*, deprecated, renamed: "hasWideCamera")
+  public var hasNormalCamera: Swift.Bool {
+    get
+  }
+  public var hasWideCamera: Swift.Bool {
+    get
+  }
+  public var hasTelephotoCamera: Swift.Bool {
+    get
+  }
+  public var hasUltraWideCamera: Swift.Bool {
+    get
+  }
+}
+@available(iOS 11.0, watchOS 4.0, macOS 10.10.3, tvOS 11.0, *)
+extension BinahAI.Device {
+  public enum ThermalState {
+    case nominal
+    case fair
+    case serious
+    case critical
+    public static func == (a: BinahAI.Device.ThermalState, b: BinahAI.Device.ThermalState) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+  public var thermalState: BinahAI.Device.ThermalState? {
+    get
+  }
+}
+extension BinahAI.Device {
+  public enum CPU : Swift.Comparable {
+    case a4
+    case a5
+    case a5X
+    case a6
+    case a6X
+    case a7
+    case a8
+    case a8X
+    case a9
+    case a9X
+    case a10Fusion
+    case a10XFusion
+    case a11Bionic
+    case a12Bionic
+    case a12XBionic
+    case a12ZBionic
+    case a13Bionic
+    case a14Bionic
+    case a15Bionic
+    case a16Bionic
+    case m1
+    case m2
+    case unknown
+    public static func == (a: BinahAI.Device.CPU, b: BinahAI.Device.CPU) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public static func < (a: BinahAI.Device.CPU, b: BinahAI.Device.CPU) -> Swift.Bool
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+  public var cpu: BinahAI.Device.CPU {
+    get
+  }
+}
+extension BinahAI.Device.CPU : Swift.CustomStringConvertible {
+  public var description: Swift.String {
+    get
+  }
+}
+extension UIKit.UIDeviceOrientation : BinahAI.BNHCustomStringConvertible {
+  public var bnhDescription: Swift.String {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignRMSSD) @objcMembers public class VitalSignRMSSD : BinahAI.VitalSignInt {
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(BNHImageData) @objcMembers public class ImageData : ObjectiveC.NSObject {
+  @objc final public let image: UIKit.UIImage
+  @objc final public let roi: CoreFoundation.CGRect
+  @objc final public let imageValidity: Swift.Int
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignRespirationRate) @objcMembers public class VitalSignRespirationRate : BinahAI.VitalSignInt {
+  @objc final public let confidence: BinahAI.VitalSignConfidence?
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(BNHSessionBuilder) @objcMembers public class SessionBuilder : ObjectiveC.NSObject {
+  @objc public func build(licenseDetails: BinahAI.LicenseDetails) throws -> BinahAI.Session
+  @objc public func withSessionInfoListener(_ listener: BinahAI.SessionInfoListener) -> BinahAI.SessionBuilder
+  @objc public func withVitalSignsListener(_ listener: BinahAI.VitalSignsListener) -> BinahAI.SessionBuilder
+  @objc public func withImageListener(_ listener: BinahAI.ImageListener) -> BinahAI.SessionBuilder
+  @objc public func withOptions(options: [Swift.String : Any]) -> BinahAI.SessionBuilder
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignHemoglobinA1C) @objcMembers public class VitalSignHemoglobinA1C : BinahAI.VitalSignDouble {
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignRRI) @objcMembers public class VitalSignRRI : ObjectiveC.NSObject, BinahAI.VitalSign {
+  @objc public var type: BinahAI.VitalSignType {
+    get
+  }
+  @objc final public let value: [BinahAI.RRI]
+  @objc final public let confidence: BinahAI.VitalSignConfidence?
+  @objc deinit
+}
+extension BinahAI.VitalSignRRI : BinahAI.BNHCustomStringConvertible {
+  @objc dynamic public var bnhDescription: Swift.String {
+    @objc get
+  }
+}
+@_inheritsConvenienceInitializers @objc(BNHVitalSignsResults) @objcMembers public class VitalSignsResults : ObjectiveC.NSObject {
+  @objc public func getResults() -> [BinahAI.VitalSign]
+  @objc public func getResult(of vitalSignType: BinahAI.VitalSignType) -> BinahAI.VitalSign?
+  @objc public func getVitalSignTypes() -> [BinahAI.VitalSignType]
+  @objc override dynamic public init()
+  @objc deinit
+}
+extension BinahAI.VitalSignsResults {
+  @objc override dynamic public var debugDescription: Swift.String {
+    @objc get
+  }
+  @objc override dynamic public var description: Swift.String {
+    @objc get
+  }
+}
+@objc(BNHLicenseActivationInfo) @objcMembers public class LicenseActivationInfo : ObjectiveC.NSObject {
+  @objc final public let activationID: Swift.String
+  @objc public init(activationID: Swift.String)
+  @objc deinit
+}
+@objc(BNHMeasurementMode) public enum MeasurementMode : Swift.Int {
+  case face
+  case finger
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignDouble) @objcMembers public class VitalSignDouble : ObjectiveC.NSObject, BinahAI.VitalSign {
+  @objc public var type: BinahAI.VitalSignType {
+    get
+  }
+  @objc final public let value: Swift.Double
+  @objc deinit
+}
+extension BinahAI.VitalSignDouble : BinahAI.BNHCustomStringConvertible {
+  @objc dynamic public var bnhDescription: Swift.String {
+    @objc get
+  }
+}
+@objc(BNHImageListener) public protocol ImageListener {
+  @objc func onImage(imageData: BinahAI.ImageData)
+}
+@objc(BNHBloodPressure) @objcMembers public class BloodPressure : ObjectiveC.NSObject {
+  @objc final public let systolic: Swift.Int
+  @objc final public let diastolic: Swift.Int
+  @objc public init(systolic: Swift.Int, diastolic: Swift.Int)
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc(BNHImageValidity) @objcMembers public class ImageValidity : ObjectiveC.NSObject {
+  @objc public static let valid: Swift.Int
+  @objc public static let invalidDeviceOrientation: Swift.Int
+  @objc public static let invalidRoi: Swift.Int
+  @objc public static let tiltedHead: Swift.Int
+  @objc public static let faceTooFar: Swift.Int
+  @objc public static let unevenLight: Swift.Int
+  @objc override dynamic public init()
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignOxygenSaturation) @objcMembers public class VitalSignOxygenSaturation : BinahAI.VitalSignInt {
+  @objc deinit
+}
+@_inheritsConvenienceInitializers @objc(BNHVitalSignTypes) @objcMembers public class VitalSignTypes : ObjectiveC.NSObject {
+  @objc public static let none: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let pulseRate: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let respirationRate: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let oxygenSaturation: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let stressLevel: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let stressIndex: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let sdnn: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let bloodPressure: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let rri: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let meanRri: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let rmssd: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let sd1: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let sd2: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let prq: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let pnsIndex: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let pnsZone: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let snsIndex: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let snsZone: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let wellnessIndex: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let wellnessLevel: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let lfhf: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let hemoglobin: BinahAI.VitalSignTypeBitmaskCode
+  @objc public static let hemoglobinA1C: BinahAI.VitalSignTypeBitmaskCode
+  @objc public var all: [BinahAI.VitalSignType] {
+    @objc get
+  }
+  @objc override dynamic public init()
+  @objc deinit
+}
+@objc(BNHFaceAngles) @objcMembers public class FaceAngles : ObjectiveC.NSObject {
+  @objc final public let yaw: Swift.Float
+  @objc final public let roll: Swift.Float
+  @objc final public let pitch: Swift.Float
+  @objc public init(yaw: Swift.Float, roll: Swift.Float, pitch: Swift.Float)
+  @objc deinit
+}
+extension BinahAI.FaceAngles {
+  @objc override dynamic public var description: Swift.String {
+    @objc get
+  }
+  @objc override dynamic public var debugDescription: Swift.String {
+    @objc get
+  }
+}
+@_inheritsConvenienceInitializers @objc(BNHSessionEnabledVitalSigns) @objcMembers public class SessionEnabledVitalSigns : ObjectiveC.NSObject {
+  @objc final public let deviceEnabled: BinahAI.EnabledVitalSigns
+  @objc final public let measurementModeEnabled: BinahAI.EnabledVitalSigns
+  @objc final public let licenseEnabled: BinahAI.EnabledVitalSigns
+  @objc override dynamic public init()
+  @objc public init(deviceEnabled: BinahAI.EnabledVitalSigns, measurementModeEnabled: BinahAI.EnabledVitalSigns, licenseEnabled: BinahAI.EnabledVitalSigns)
+  @objc public func isEnabled(vitalSignType: BinahAI.VitalSignType) -> Swift.Bool
+  @objc public func isDeviceEnabled(vitalSignType: BinahAI.VitalSignType) -> Swift.Bool
+  @objc public func isMeasurementModeEnabled(vitalSignType: BinahAI.VitalSignType) -> Swift.Bool
+  @objc public func isLicenseEnabled(vitalSignType: BinahAI.VitalSignType) -> Swift.Bool
+  @objc deinit
+}
+public struct ImageRGB {
+  public let red: Swift.Int
+  public let green: Swift.Int
+  public let blue: Swift.Int
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignPulseRate) @objcMembers public class VitalSignPulseRate : BinahAI.VitalSignInt {
+  @objc final public let confidence: BinahAI.VitalSignConfidence?
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignStressLevel) @objcMembers public class VitalSignStressLevel : ObjectiveC.NSObject, BinahAI.VitalSign {
+  @objc public var type: BinahAI.VitalSignType {
+    get
+  }
+  @objc final public let value: BinahAI.StressLevel
+  @objc deinit
+}
+extension BinahAI.VitalSignStressLevel : BinahAI.BNHCustomStringConvertible {
+  @objc dynamic public var bnhDescription: Swift.String {
+    @objc get
+  }
+}
+@_hasMissingDesignatedInitializers @available(iOS 13, *)
+@objc(BNHFingerSessionBuilder) @objcMembers public class FingerSessionBuilder : BinahAI.SessionBuilder {
+  @objc public init()
+  @objc override public func build(licenseDetails: BinahAI.LicenseDetails) throws -> BinahAI.Session
+  @objc deinit
+}
+@objc(BNHAlgoType) public enum AlgoType : Swift.Int {
+  case ppg
+  case rppg
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@objc(BNHVitalSignsListener) public protocol VitalSignsListener {
+  @objc func onVitalSign(vitalSign: BinahAI.VitalSign)
+  @objc func onFinalResults(results: BinahAI.VitalSignsResults)
+}
+@objc(BNHLicenseOfflineMeasurements) @objcMembers public class LicenseOfflineMeasurements : ObjectiveC.NSObject {
+  @objc final public let totalMeasurements: Swift.Int64
+  @objc final public let remainingMeasurements: Swift.Int64
+  @objc final public let measurementEndTimestamp: Swift.Int64
+  @objc public init(totalMeasurements: Swift.Int64, remainingMeasurements: Swift.Int64, measurementEndTimestamp: Swift.Int64)
+  @objc deinit
+}
+public typealias AlertDomain = Swift.String
+@objc @_inheritsConvenienceInitializers @objcMembers public class AlertDomains : ObjectiveC.NSObject {
+  @objc public static let device: Swift.String
+  @objc public static let camera: Swift.String
+  @objc public static let license: Swift.String
+  @objc public static let measurement: Swift.String
+  @objc public static let vitalSigns: Swift.String
+  @objc public static let recorder: Swift.String
+  @objc public static let session: Swift.String
+  @objc public static let initialization: Swift.String
+  @objc public var all: [BinahAI.AlertDomain] {
+    @objc get
+  }
+  @objc override dynamic public init()
+  @objc deinit
+}
+@objc(BNHSession) public protocol Session {
+  @objc func start(measurementDuration: Swift.UInt64) throws
+  @objc func stop() throws
+  @objc func terminate()
+  @objc var state: BinahAI.SessionState { get }
+}
+@objc(BNHImageFormatMode) public enum ImageFormatMode : Swift.Int {
+  case standardQuality
+  case highQuality
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignBloodPressure) @objcMembers public class VitalSignBloodPressure : ObjectiveC.NSObject, BinahAI.VitalSign {
+  @objc public var type: BinahAI.VitalSignType {
+    get
+  }
+  @objc final public let value: BinahAI.BloodPressure
+  @objc deinit
+}
+extension BinahAI.VitalSignBloodPressure : BinahAI.BNHCustomStringConvertible {
+  @objc dynamic public var bnhDescription: Swift.String {
+    @objc get
+  }
+}
+@objc(BNHStressLevel) public enum StressLevel : Swift.Int {
+  case unknown
+  case low
+  case normal
+  case mild
+  case high
+  case extreme
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+extension BinahAI.StressLevel : BinahAI.BNHCustomStringConvertible {
+  public var bnhDescription: Swift.String {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignInt) @objcMembers public class VitalSignInt : ObjectiveC.NSObject, BinahAI.VitalSign {
+  @objc public var type: BinahAI.VitalSignType {
+    get
+  }
+  @objc final public let value: Swift.Int
+  @objc deinit
+}
+extension BinahAI.VitalSignInt : BinahAI.BNHCustomStringConvertible {
+  @objc dynamic public var bnhDescription: Swift.String {
+    @objc get
+  }
+}
+@objc(BNHLicenseMessage) @objcMembers public class LicenseMessage : ObjectiveC.NSObject {
+  @objc public static let error: Swift.Int
+  @objc public static let warning: Swift.Int
+  @objc public static let dataUpdate: Swift.Int
+  @objc public static let reset: Swift.Int
+  @objc public init(type: Swift.Int, value: Any?)
+  @objc deinit
+}
+extension BinahAI.LicenseMessage : BinahAI.BNHCustomStringConvertible {
+  @objc dynamic public var bnhDescription: Swift.String {
+    @objc get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignHemoglobin) @objcMembers public class VitalSignHemoglobin : BinahAI.VitalSignDouble {
+  @objc deinit
+}
+@objc(BNHCoreMessageDelegate) public protocol CoreMessageDelegate {
+  @objc func coreMessage(_ coreMessage: BinahAI.CoreMessage)
+}
+@objc(BNHSnsZone) public enum SNSZone : Swift.Int {
+  case unknown
+  case low
+  case normal
+  case high
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+extension BinahAI.SNSZone : BinahAI.BNHCustomStringConvertible {
+  public var bnhDescription: Swift.String {
+    get
+  }
+}
+@objc(BNHPnsZone) public enum PNSZone : Swift.Int {
+  case unknown
+  case low
+  case normal
+  case high
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+extension BinahAI.PNSZone : BinahAI.BNHCustomStringConvertible {
+  public var bnhDescription: Swift.String {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignPNSZone) @objcMembers public class VitalSignPNSZone : ObjectiveC.NSObject, BinahAI.VitalSign {
+  @objc public var type: BinahAI.VitalSignType {
+    get
+  }
+  @objc final public let value: BinahAI.PNSZone
+  @objc deinit
+}
+extension BinahAI.VitalSignPNSZone : BinahAI.BNHCustomStringConvertible {
+  @objc dynamic public var bnhDescription: Swift.String {
+    @objc get
+  }
+}
+@objc(BNHSessionState) public enum SessionState : Swift.Int {
+  case initializing
+  case ready
+  case starting
+  case processing
+  case stopping
+  case terminating
+  case terminated
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+extension BinahAI.SessionState : BinahAI.BNHCustomStringConvertible {
+  public var bnhDescription: Swift.String {
+    get
+  }
+}
+public protocol BNHCustomStringConvertible {
+  var bnhDescription: Swift.String { get }
+}
+@objc(BNHConfidenceLevel) public enum ConfidenceLevel : Swift.Int {
+  case unknown
+  case low
+  case medium
+  case high
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+extension Swift.Int64 : BinahAI.BNHCustomStringConvertible {
+  public var bnhDescription: Swift.String {
+    get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignLFHF) @objcMembers public class VitalSignLFHF : BinahAI.VitalSignDouble {
+  @objc deinit
+}
+@objc(BNHLicenseTokenData) @objcMembers public class LicenseTokenData : ObjectiveC.NSObject {
+  @objc public init(activationID: Swift.String, enabledVitalSigns: BinahAI.VitalSignType, totalOfflineMeasurements: Swift.Int64, remainingOfflineMeasurements: Swift.Int64, offlineMeasurementEndTimestamp: Swift.Int64)
+  @objc deinit
+}
+@objc(BNHDeviceOrientation) public enum DeviceOrientation : Swift.Int {
+  case portrait
+  case portraitUpsideDown
+  case landscapeLeft
+  case landscapeRight
+  public init?(rawValue: Swift.Int)
+  public typealias RawValue = Swift.Int
+  public var rawValue: Swift.Int {
+    get
+  }
+}
+@objc(BNHVitalSign) public protocol VitalSign {
+  @objc var type: BinahAI.VitalSignType { get }
+}
+@_hasMissingDesignatedInitializers @objc(BNHWarningData) @objcMembers public class WarningData : ObjectiveC.NSObject, BinahAI.AlertData {
+  @objc public var domain: Swift.String
+  @objc public var code: Swift.Int
+  @objc public var additionalInfo: [Swift.String : Any]
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignPRQ) @objcMembers public class VitalSignPRQ : BinahAI.VitalSignDouble {
+  @objc final public let confidence: BinahAI.VitalSignConfidence?
+  @objc deinit
+}
+@objc(BNHCoreMessage) @objcMembers public class CoreMessage : ObjectiveC.NSObject {
+  @objc final public let type: BinahAI.CoreMessageType
+  @objc final public let value: Any
+  @objc public init(type: BinahAI.CoreMessageType, value: Any)
+  @objc deinit
+}
+extension BinahAI.CoreMessage : BinahAI.BNHCustomStringConvertible {
+  @objc dynamic public var bnhDescription: Swift.String {
+    @objc get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(BNHErrorData) @objcMembers public class ErrorData : ObjectiveC.NSObject, BinahAI.AlertData {
+  @objc public var domain: Swift.String
+  @objc public var code: Swift.Int
+  @objc public var additionalInfo: [Swift.String : Any]
+  @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignWellnessLevel) @objcMembers public class VitalSignWellnessLevel : ObjectiveC.NSObject, BinahAI.VitalSign {
+  @objc public var type: BinahAI.VitalSignType {
+    get
+  }
+  @objc final public let value: BinahAI.WellnessLevel
+  @objc deinit
+}
+extension BinahAI.VitalSignWellnessLevel : BinahAI.BNHCustomStringConvertible {
+  @objc dynamic public var bnhDescription: Swift.String {
+    @objc get
+  }
+}
+@_hasMissingDesignatedInitializers @objc(BNHVitalSignPNSIndex) @objcMembers public class VitalSignPNSIndex : BinahAI.VitalSignDouble {
+  @objc deinit
+}
+extension BinahAI.WellnessLevel : Swift.Equatable {}
+extension BinahAI.WellnessLevel : Swift.Hashable {}
+extension BinahAI.WellnessLevel : Swift.RawRepresentable {}
+extension BinahAI.CoreMessageType : Swift.Equatable {}
+extension BinahAI.CoreMessageType : Swift.Hashable {}
+extension BinahAI.CoreMessageType : Swift.RawRepresentable {}
+extension BinahAI.Sex : Swift.Equatable {}
+extension BinahAI.Sex : Swift.Hashable {}
+extension BinahAI.Sex : Swift.RawRepresentable {}
+extension BinahAI.Device.Orientation : Swift.Equatable {}
+extension BinahAI.Device.Orientation : Swift.Hashable {}
+extension BinahAI.Device.CameraType : Swift.Equatable {}
+extension BinahAI.Device.CameraType : Swift.Hashable {}
+@available(iOS 11.0, watchOS 4.0, macOS 10.10.3, tvOS 11.0, *)
+extension BinahAI.Device.ThermalState : Swift.Equatable {}
+@available(iOS 11.0, watchOS 4.0, macOS 10.10.3, tvOS 11.0, *)
+extension BinahAI.Device.ThermalState : Swift.Hashable {}
+extension BinahAI.Device.CPU : Swift.Hashable {}
+extension BinahAI.MeasurementMode : Swift.Equatable {}
+extension BinahAI.MeasurementMode : Swift.Hashable {}
+extension BinahAI.MeasurementMode : Swift.RawRepresentable {}
+extension BinahAI.AlgoType : Swift.Equatable {}
+extension BinahAI.AlgoType : Swift.Hashable {}
+extension BinahAI.AlgoType : Swift.RawRepresentable {}
+extension BinahAI.ImageFormatMode : Swift.Equatable {}
+extension BinahAI.ImageFormatMode : Swift.Hashable {}
+extension BinahAI.ImageFormatMode : Swift.RawRepresentable {}
+extension BinahAI.StressLevel : Swift.Equatable {}
+extension BinahAI.StressLevel : Swift.Hashable {}
+extension BinahAI.StressLevel : Swift.RawRepresentable {}
+extension BinahAI.SNSZone : Swift.Equatable {}
+extension BinahAI.SNSZone : Swift.Hashable {}
+extension BinahAI.SNSZone : Swift.RawRepresentable {}
+extension BinahAI.PNSZone : Swift.Equatable {}
+extension BinahAI.PNSZone : Swift.Hashable {}
+extension BinahAI.PNSZone : Swift.RawRepresentable {}
+extension BinahAI.SessionState : Swift.Equatable {}
+extension BinahAI.SessionState : Swift.Hashable {}
+extension BinahAI.SessionState : Swift.RawRepresentable {}
+extension BinahAI.ConfidenceLevel : Swift.Equatable {}
+extension BinahAI.ConfidenceLevel : Swift.Hashable {}
+extension BinahAI.ConfidenceLevel : Swift.RawRepresentable {}
+extension BinahAI.DeviceOrientation : Swift.Equatable {}
+extension BinahAI.DeviceOrientation : Swift.Hashable {}
+extension BinahAI.DeviceOrientation : Swift.RawRepresentable {}

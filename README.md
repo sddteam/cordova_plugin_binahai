@@ -3,6 +3,8 @@ title: BinahAi
 description: Integrate BinahAi SDK to cordova.
 sdk version: 5.0.5
 ---
+
+# UPDATED README!!! - 08/03/2023
 <!--
 # license: Licensed to the Apache Software Foundation (ASF) under one
 #         or more contributor license agreements.  See the NOTICE file
@@ -51,26 +53,39 @@ this.platform.ready().then(() => {
 ## Installation
 Install `@awesome-cordova-plugins/core` and `@awesome-cordova-plugins/binah-ai` from github repository `https://github.com/marhano/awesome_cordova_plugins_binahai.git` this will act as wrapper for the actual plugin
 
-    npm install @awesome-cordova-plugins-core
+    npm install @awesome-cordova-plugins/core
     npm install https://github.com/marhano/awesome_cordova_plugins_binahai.git
 
-Install the cordova plugin BinahAi
+Install the cordova plugin BinahAi (add "#branchName" at the end to install a specific branch)
 
-    ionic cordova plugin add https://github.com/marhano/cordova_plugin_binahai
-    
+    ionic cordova plugin add https://github.com/marhano/cordova_plugin_binahai.git
+
+## Ionic setup
+Open `config.xml` and add the snippet below.
+
+    <preference name="android-minSdkVersion" value="27" />
+    <preference name="AndroidGradlePluginVersion" value="7.3.1" />
+
+The camera fragment is default to be at the back of the webview so you need to make sure the ion content background is set to transparent.
+
+    ion-content { --background: transparent !important; }
+
+Also remove the dark mode theme from the `variables.scss` file.
 
 ## Properties
 
 - startCamera
+- stopCamera
 - startScan
 - stopScan
 - imageValidation
+- getSessionState - ondev
 
 # Methods
 
 ## startCamera(options, [successCallback, errorCallback])
 
-Options: All options stated are optional except licenseKey.
+Options: All options stated are optional except licenseKey [ondev].
 
 - `licenseKey` - binah ai provided license for android
 - `sex` - (as classified at birth) [UNSPECIFIED / MALE / FEMALE]
@@ -89,7 +104,21 @@ let options = {
   weight: 62,
 };
 
-BinahAi.startCamera(options);
+BinahAi.startCamera(options).then((result) => {
+  console.log(result);
+}).catch((error) => {
+  console.log(error);
+});
+```
+
+## stopCamera([successCallback, errorCallback])
+
+Stop the camera preview. It is recommended to call this method whenever the preview is not visible.
+
+Example:
+
+```ts
+BinahAi.stopCamera();
 ```
 
 ## startScan([successCallback, errorCallback])
@@ -99,23 +128,18 @@ Start the measurement.
 ```ts 
 BinahAi.startScan().subscribe({
   next: (result) => {
-    this.startSimulation();
     if(Object.keys(result).length > 3){
-      this.finalResults = result as FinalResults;
-      console.log("FINAL RESULTS: " + JSON.stringify(this.finalResults, null, 4));
+      console.log("FINAL RESULTS: " + JSON.stringify(result, null, 4));
     }else{
-      const liveMeasurements = result as LiveMeasurements;
-      this.measurements = liveMeasurements;
+      console.log("LIVE RESULTS: " + JSON.stringify(result, null, 4));
     }
-
-    this.changeDetectorRef.detectChanges();
   },
   error: (err) => console.error(err),
   complete: () => console.info('complete')
 });
 ```
 
-Returns n `{Obervable<any>}`, wrap the results with the provided interface `[LiveMeasurements, FinalResult]` which is the two type of result for start scan. During measurement the `LiveMeasurement` are being returned upon manually stopping the measurement or stopped after measurement duration the `FinalResult` will be returned.
+Returns an `{Obervable<any>}`, wrap the results with the provided interface `[LiveMeasurements, FinalResult]` which is the two type of result for start scan. During measurement the `LiveMeasurement` are being returned upon manually stopping the measurement or stopped after measurement duration the `FinalResult` will be returned.
 
 ## stopScan([successCallback, errorCallback])
 
@@ -149,6 +173,37 @@ The following are conditions that will invalidate the image for processing by th
 - `Uneven Light` - The light on the user's face is not evenly distributed.
 
 Returns a `{Observable<any>}` with the image validation code.
+
+## getSessionState([successCallback, errorCallback]) - ondev
+
+Retrieve the current state of the session.
+
+| State Name  | State Definition |
+| ------------- | ------------- |
+| INITIALIZING  | The session is in its initial state, performing initialization actions. Please wait until you receive the message indicating that the session is in the READY state before starting to measure vital signs or before calling any session APIs.  |
+| READY  | The session is now ready to be started. The application can display the camera preview. Refer to the Creating a Preview page for detailed instructions.  |
+| STARTING | The session is currently preparing to measure vital signs. |
+| PROCESSING | The session is processing the images and calculating vital signs. For information on the handling of instantaneous vital signs, please refer to the Vital Signs page. |
+| STOPPING | The session has been stopped, and the measurement results are being calculated. For information on the handling the final results, please see the Vital Signs page. |
+| TERMINATING | The session is currently being terminated. Please refrain from calling any session APIs. |
+| TERMINATED | The session has been gracefully terminated, and a new session can now be initiated. |
+
+```ts
+this.binahAi.getSessionState().subscribe({
+  next: (result) => {
+    console.log(result);
+  },
+  error: (error) => {
+    console.error(error);
+  }
+});
+```
+
+## getApiLevel([successCallback, errorCallback])
+
+Get device API level.
+
+    var string = binahAi.getApiLevel();
 
 # Sample App
 <a href="https://github.com/marhano/binah_ionic_prototype">binah_ionic_prototype</a> for a complete working Cordova example for Android platforms.

@@ -1,0 +1,21 @@
+framework module BinahAI {
+    umbrella header "BinahAI.h"
+
+    export *
+    module * { export * }
+    
+    
+    explicit module Private {
+        header "BNHMatWrapper.h"
+        header "BNHImageHelper.h"
+        header "BNHErrorFactory.h"
+        header "BNHInternalVitalSign.h"
+        header "BNHInternalCoreProcessResult.h"
+        header "BNHInternalCoreDriverOperationModes.h"
+    }
+}
+
+module BinahAI.Swift {
+  header "BinahAI-Swift.h"
+  requires objc
+}
