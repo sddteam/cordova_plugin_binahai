@@ -3,6 +3,7 @@ package inc.bastion.binahai;
 import android.accessibilityservice.AccessibilityService;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Rect;
@@ -29,6 +30,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -155,7 +157,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     }
     _vitalHolder = null;
     eventListener = null;
-    imageValidationTimer.cancel();
+    //imageValidationTimer.cancel();
   }
 
   @Override
@@ -167,7 +169,6 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
       }
       // Drawing the bitmap on the TextureView canvas
       Bitmap image = imageData.getImage();
-      bitmapImage = image;
       canvas.drawBitmap(
         image,
         null,
@@ -179,8 +180,34 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
       //Drawing the face detection (if not null..)
       Rect roi = imageData.getROI();
       if (roi != null) {
+
+
+
         //Log.d(TAG, "ROI: TOP: " + roi.top + "RIGHT: " + roi.right + "BOTTOM: " + roi.bottom + "LEFT: " + roi.left);
         if (!isValidationTimerRunning) {
+          int expandRoi = 30;
+          int compressionQuality = 20;
+          Rect expandedRoi = new Rect(
+            roi.left - expandRoi,
+            roi.top - expandRoi,
+            roi.right + expandRoi,
+            roi.bottom + expandRoi
+          );
+
+          Bitmap croppedBitmap = Bitmap.createBitmap(
+            image,
+            expandedRoi.left,
+            expandedRoi.top,
+            expandedRoi.width(),
+            expandedRoi.height()
+          );
+
+          ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+          croppedBitmap.compress(Bitmap.CompressFormat.JPEG, compressionQuality, outputStream);
+          byte[] compressedImageData = outputStream.toByteArray();
+          Bitmap compressedBitmap = BitmapFactory.decodeByteArray(compressedImageData, 0, compressedImageData.length);
+          bitmapImage = compressedBitmap;
+
           isValidationTimerRunning = true;
           startFaceValidationTimer();
         }
@@ -555,6 +582,8 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
             e.printStackTrace();
           }
         }
+        isValidationTimerRunning = false;
+        stopFaceValidationTimer();
         eventListener.onFinalResult(finalResult);
       }
     });

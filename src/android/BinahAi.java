@@ -1,8 +1,6 @@
 package inc.bastion.binahai;
 
 import android.graphics.Bitmap;
-import android.nfc.Tag;
-import android.os.Build;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -13,9 +11,8 @@ import android.widget.FrameLayout;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.CallbackContext;
-
+import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,12 +20,9 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 
-import javax.security.auth.callback.Callback;
-
 import ai.binah.sdk.api.HealthMonitorException;
 import ai.binah.sdk.api.session.Session;
 import ai.binah.sdk.api.session.SessionState;
-import ai.binah.sdk.api.session.demographics.Sex;
 
 public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePreviewListener {
   private static final String TAG = "BinahAi";
@@ -54,12 +48,14 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   private int containerViewId = 20;
   private boolean toBack = true;
   private ViewParent webViewParent;
+  private String _base64Image;
+  private final int PERMISSION_REQUEST_CODE = 1234;
 
   private CameraActivity fragment;
 
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
-    if (START_CAMERA.equals(action)){
+    if (START_CAMERA.equals(action)) {
       String licenseKey = args.getString(0);
       long duration = args.getLong(1);
       cordova.getThreadPool().execute(new Runnable() {
@@ -69,17 +65,17 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
         }
       });
       return true;
-    }else if(STOP_CAMERA.equals(action)){
+    } else if (STOP_CAMERA.equals(action)) {
       return stopCamera(callbackContext);
-    }else if(START_SCAN.equals(action)){
+    } else if (START_SCAN.equals(action)) {
       return startScan(callbackContext);
-    }else if(STOP_SCAN.equals(action)){
+    } else if (STOP_SCAN.equals(action)) {
       return stopScan(callbackContext);
-    }else if(IMAGE_VALIDATION.equals(action)){
+    } else if (IMAGE_VALIDATION.equals(action)) {
       return imageValidation(callbackContext);
-    }else if(GET_SESSION_STATE.equals(action)){
+    } else if (GET_SESSION_STATE.equals(action)) {
       return getSessionState(callbackContext);
-    }else if(USER_FACE_VALIDATION.equals(action)){
+    } else if (USER_FACE_VALIDATION.equals(action)) {
       return userFaceValidation(callbackContext);
     }
     return false;
@@ -99,8 +95,6 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     fragment.setEventListener(this);
     fragment.licenseKey = licenseKey;
 
-    int apiLevel = Build.VERSION.SDK_INT;
-    Log.d(TAG, String.valueOf(apiLevel));
     cordova.getActivity().runOnUiThread(new Runnable() {
       @Override
       public void run() {
@@ -182,6 +176,12 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     fragmentTransaction.commit();
 
     callbackContext.success();
+
+    if(getSessionStateCallbackContext != null){
+      PluginResult getSessionStatePluginResult = new PluginResult(PluginResult.Status.OK);
+      getSessionStatePluginResult.setKeepCallback(false);
+      getSessionStateCallbackContext.sendPluginResult(getSessionStatePluginResult);
+    }
     return true;
   }
 
@@ -243,22 +243,10 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       imageValidationCallbackContext.sendPluginResult(imageValidationPluginResult);
     }
 
-    if(getSessionStateCallbackContext != null){
-      PluginResult getSessionStatePluginResult = new PluginResult(PluginResult.Status.OK);
-      getSessionStatePluginResult.setKeepCallback(false);
-      getSessionStateCallbackContext.sendPluginResult(getSessionStatePluginResult);
-    }
-
     if(startScanCallbackContext != null){
       PluginResult startScanPluginResult = new PluginResult(PluginResult.Status.OK, vitalSignsResults);
       startScanPluginResult.setKeepCallback(false);
       startScanCallbackContext.sendPluginResult(startScanPluginResult);
-    }
-
-    if(userFaceValidationCallbackContext != null){
-      PluginResult userFaceValidationPluginResult = new PluginResult(PluginResult.Status.OK);
-      userFaceValidationPluginResult.setKeepCallback(false);
-      userFaceValidationCallbackContext.sendPluginResult(userFaceValidationPluginResult);
     }
   }
 
@@ -314,7 +302,8 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   public void onFaceValidation(Bitmap image) {
     if(userFaceValidationCallbackContext != null){
       String base64Image = bitmapToBase64(image);
-      PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, base64Image);
+      _base64Image = base64Image;
+      PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, _base64Image);
       pluginResult.setKeepCallback(true);
       userFaceValidationCallbackContext.sendPluginResult(pluginResult);
     }
