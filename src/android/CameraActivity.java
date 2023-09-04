@@ -3,12 +3,14 @@ package inc.bastion.binahai;
 import android.accessibilityservice.AccessibilityService;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.TextureView;
@@ -28,10 +30,13 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import ai.binah.sdk.api.HealthMonitorException;
 import ai.binah.sdk.api.SessionEnabledVitalSigns;
@@ -83,10 +88,11 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     void onFinalResult(JSONArray vitalSignsResults);
     void onImageValidation(JSONObject imageValidationCode);
     void onSessionState(String sessionState);
-    void onCameraStarted(Session session);
-    void onCameraError(HealthMonitorException e);
+    void onBNHCameraStarted(Session session);
+    void onBNHCameraError(HealthMonitorException e);
     void onBNHWarning(int warningCode);
     void onBNHError(int errorCode);
+    void onFaceValidation(Bitmap image);
   }
   private ImagePreviewListener eventListener;
   private static final String TAG = "CameraActivity";
@@ -100,6 +106,11 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   private JSONObject _vitalHolder = new JSONObject();
 
   private String appResourcePackage;
+  private Bitmap bitmapImage;
+
+  private Timer imageValidationTimer;
+  private boolean isValidationTimerRunning = false;
+
 
   public void setEventListener(ImagePreviewListener listener){
     eventListener = listener;
@@ -146,6 +157,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     }
     _vitalHolder = null;
     eventListener = null;
+    //imageValidationTimer.cancel();
   }
 
   @Override
@@ -168,7 +180,38 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
       //Drawing the face detection (if not null..)
       Rect roi = imageData.getROI();
       if (roi != null) {
+
+
+
         //Log.d(TAG, "ROI: TOP: " + roi.top + "RIGHT: " + roi.right + "BOTTOM: " + roi.bottom + "LEFT: " + roi.left);
+        if (!isValidationTimerRunning) {
+          int expandRoi = 30;
+          int compressionQuality = 20;
+          Rect expandedRoi = new Rect(
+            roi.left - expandRoi,
+            roi.top - expandRoi,
+            roi.right + expandRoi,
+            roi.bottom + expandRoi
+          );
+
+          Bitmap croppedBitmap = Bitmap.createBitmap(
+            image,
+            expandedRoi.left,
+            expandedRoi.top,
+            expandedRoi.width(),
+            expandedRoi.height()
+          );
+
+          ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+          croppedBitmap.compress(Bitmap.CompressFormat.JPEG, compressionQuality, outputStream);
+          byte[] compressedImageData = outputStream.toByteArray();
+          Bitmap compressedBitmap = BitmapFactory.decodeByteArray(compressedImageData, 0, compressedImageData.length);
+          bitmapImage = compressedBitmap;
+
+          isValidationTimerRunning = true;
+          startFaceValidationTimer();
+        }
+        //eventListener.onFaceValidation(imageData.getImage());
         JSONObject imageErrorCode = new JSONObject();
         try {
           if (imageData.getImageValidity() != ImageValidity.VALID) {
@@ -200,6 +243,32 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
 
       _cameraView.unlockCanvasAndPost(canvas);
     });
+
+  }
+
+  public void startFaceValidationTimer() {
+    stopFaceValidationTimer(); // Stop the previous timer if it's running
+
+    imageValidationTimer = new Timer();
+    TimerTask imageValidationTask = new TimerTask() {
+      @Override
+      public void run() {
+        if (bitmapImage != null) {
+          getActivity().runOnUiThread(() -> {
+            eventListener.onFaceValidation(bitmapImage);
+          });
+        }
+      }
+    };
+
+    imageValidationTimer.schedule(imageValidationTask, 0, 10000); // Initial delay of 0, repeat every 10 seconds
+  }
+
+  public void stopFaceValidationTimer() {
+    if (imageValidationTimer != null) {
+      imageValidationTimer.cancel();
+      imageValidationTimer = null;
+    }
   }
 
   public boolean isInRanged(Rect roi){
@@ -252,10 +321,10 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
         .withVitalSignsListener(this)
         .withSessionInfoListener(this)
         .build(licenseDetails);
-      eventListener.onCameraStarted(mSession);
+      eventListener.onBNHCameraStarted(mSession);
     } catch (HealthMonitorException e) {
       //showAlert(null, "Create session error: " + e.getErrorCode());
-      eventListener.onCameraError(e);
+      eventListener.onBNHCameraError(e);
     }
   }
 
@@ -513,6 +582,8 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
             e.printStackTrace();
           }
         }
+        isValidationTimerRunning = false;
+        stopFaceValidationTimer();
         eventListener.onFinalResult(finalResult);
       }
     });
