@@ -76,7 +76,6 @@ import ai.binah.sdk.api.vital_signs.vitals.VitalSignStressLevel;
 import ai.binah.sdk.api.vital_signs.vitals.VitalSignWellnessIndex;
 import ai.binah.sdk.api.vital_signs.vitals.VitalSignWellnessLevel;
 import ai.binah.sdk.session.FaceSessionBuilder;
-import com.binahptt.bastion.R;
 
 public class CameraActivity extends Fragment implements ImageListener, SessionInfoListener, VitalSignsListener{
   public interface ImagePreviewListener{
@@ -86,12 +85,12 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     void onSessionState(String sessionState);
     void onCameraStarted(Session session);
     void onCameraError(HealthMonitorException e);
+    void onBNHWarning(int warningCode);
+    void onBNHError(int errorCode);
   }
   private ImagePreviewListener eventListener;
   private static final String TAG = "CameraActivity";
-
   private static final int PERMISSION_REQUEST_CODE = 12345;
-  private static final String LICENSE_KEY = "668765-6009B5-426FAD-D62FC0-D89858-19B9FF";
   public String licenseKey;
 
   private Session mSession;
@@ -139,6 +138,17 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   }
 
   @Override
+  public void onDestroy() {
+    super.onDestroy();
+    if(mSession != null){
+      mSession.terminate();
+      mSession = null;
+    }
+    _vitalHolder = null;
+    eventListener = null;
+  }
+
+  @Override
   public void onImage(ImageData imageData) {
     getActivity().runOnUiThread(() -> {
       Canvas canvas = _cameraView.lockCanvas();
@@ -162,11 +172,11 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
         JSONObject imageErrorCode = new JSONObject();
         try {
           if (imageData.getImageValidity() != ImageValidity.VALID) {
-            Log.i(TAG, "Image Validity Error: "+ imageData.getImageValidity());
+            //Log.i(TAG, "Image Validity Error: "+ imageData.getImageValidity());
             imageErrorCode.put("imageValidationError", imageData.getImageValidity());
           }else{
             if(isInRanged(roi)){
-              Log.i(TAG, "Image Validity Error: "+ imageData.getImageValidity());
+              //Log.i(TAG, "Image Validity Error: "+ imageData.getImageValidity());
               imageErrorCode.put("imageValidationError", imageData.getImageValidity());
             }
           }
@@ -207,11 +217,13 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   }
 
   private void initUi(){
-    _cameraView = (TextureView) _view.findViewById(R.id.cameraView);
+    int camera_id = getActivity().getResources().getIdentifier("cameraView", "id", appResourcePackage);
+    _cameraView = (TextureView) _view.findViewById(camera_id);
   }
 
   private Bitmap createFaceDetectionBitmap() {
-    Drawable drawable = ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.face_detection);
+    int face_detection_id = getActivity().getResources().getIdentifier("face_detection", "drawable", appResourcePackage);
+    Drawable drawable = ContextCompat.getDrawable(getActivity().getApplicationContext(), face_detection_id);
     if (drawable == null) {
       return null;
     }
@@ -230,6 +242,9 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   }
 
   private void createSession() {
+    if(mSession != null){
+      return;
+    }
     LicenseDetails licenseDetails = new LicenseDetails(licenseKey);
     try {
       mSession = new FaceSessionBuilder(getActivity().getApplicationContext())
@@ -239,7 +254,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
         .build(licenseDetails);
       eventListener.onCameraStarted(mSession);
     } catch (HealthMonitorException e) {
-      showAlert(null, "Create session error: " + e.getErrorCode());
+      //showAlert(null, "Create session error: " + e.getErrorCode());
       eventListener.onCameraError(e);
     }
   }
@@ -256,22 +271,24 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   @Override
   public void onSessionStateChange(SessionState sessionState) {
     getActivity().runOnUiThread(() -> {
-      Toast.makeText(getContext(), "Session state: " + sessionState.name(), Toast.LENGTH_SHORT).show();
-      //onSessionStateChange(SessionState.valueOf(sessionState.name()));
+      //Toast.makeText(getContext(), "Session state: " + sessionState.name(), Toast.LENGTH_SHORT).show();
+      eventListener.onSessionState(sessionState.name());
     });
   }
 
   @Override
   public void onWarning(WarningData warningData) {
     getActivity().runOnUiThread(() -> {
-      Toast.makeText(getContext(), "Warning: " + warningData.getCode(), Toast.LENGTH_SHORT).show();
+      Toast.makeText(getContext(), "Domain: "+ warningData.getDomain() + " Warning: " + warningData.getCode(), Toast.LENGTH_SHORT).show();
+      eventListener.onBNHWarning(warningData.getCode());
     });
   }
 
   @Override
   public void onError(ErrorData errorData) {
     getActivity().runOnUiThread(() -> {
-      showAlert(null, "Domain: "+ errorData.getDomain() + " Error: "+ errorData.getCode());
+      //showAlert(null, "Domain: "+ errorData.getDomain() + " Error: "+ errorData.getCode());
+      eventListener.onBNHError(errorData.getCode());
     });
   }
 
