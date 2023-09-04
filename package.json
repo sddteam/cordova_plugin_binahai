@@ -13,8 +13,5 @@
     "cordova-android"
   ],
   "author": "marhano",
-  "license": "ISC",
-  "devDependencies": {
-    "jasmine": "^5.1.0"
-  }
+  "license": "ISC"
 }
