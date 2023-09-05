@@ -18,7 +18,7 @@
   under the License.
 -->
 
-<plugin id="cordova-plugin-device-tests"
+<plugin id="cordova-plugin-binahai-tests"
     version="1.0.0">
     <name>Cordova BinahAi Plugin Tests</name>
     <license>Apache 2.0</license>
