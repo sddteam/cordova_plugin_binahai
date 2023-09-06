@@ -35,10 +35,10 @@ xmlns:android="http://schemas.android.com/apk/res/android">
             </feature>
         </config-file>
         <source-file src="src/ios/BinahAi.m" />
-        <source-file src="src/ios/BinahAi.h" />
-        <source-file src="src/ios/CameraRenderController.h" />
+        <header-file src="src/ios/BinahAi.h" />
+        <header-file src="src/ios/CameraRenderController.h" />
         <source-file src="src/ios/CameraRenderController.m" />
         <source-file src="src/ios/CameraViewController.storyboard" />
-        <framework src="src/ios/BinahAI.framework" />
+        <framework src="BinahAI.framework" />
     </platform>
 </plugin>
