@@ -85,7 +85,7 @@ import ai.binah.sdk.session.FaceSessionBuilder;
 public class CameraActivity extends Fragment implements ImageListener, SessionInfoListener, VitalSignsListener{
   public interface ImagePreviewListener{
     void onStartScan(JSONObject vitalSign);
-    void onFinalResult(JSONArray vitalSignsResults);
+    void onFinalResult(JSONObject vitalSignsResults);
     void onImageValidation(JSONObject imageValidationCode);
     void onSessionState(String sessionState);
     void onBNHCameraStarted(Session session);
@@ -568,7 +568,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
           }
         }
 
-        JSONArray finalResult = new JSONArray();
+        JSONObject finalResult = new JSONObject();
         for (Map.Entry<Integer, String> entry : signResults.entrySet()){
           Integer signType = entry.getKey();
           Object signValue = entry.getValue();
@@ -577,7 +577,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
             JSONObject vitalSignObj = new JSONObject();
             vitalSignObj.put("name", signTypeName);
             vitalSignObj.put("value", signValue);
-            finalResult.put(vitalSignObj);
+            finalResult.put(signTypeName, vitalSignObj);
           } catch (JSONException e) {
             e.printStackTrace();
           }

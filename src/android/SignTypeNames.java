@@ -23,7 +23,7 @@ public class SignTypeNames {
     SIGN_TYPE_NAMES.put(8192, "pnsIndex");
     SIGN_TYPE_NAMES.put(16384, "pnsZone");
     SIGN_TYPE_NAMES.put(32768, "snsIndex");
-    SIGN_TYPE_NAMES.put(65536, "snsIndex");
+    SIGN_TYPE_NAMES.put(65536, "snsZone");
     SIGN_TYPE_NAMES.put(131072, "wellnessIndex");
     SIGN_TYPE_NAMES.put(262144, "wellnessLevel");
     SIGN_TYPE_NAMES.put(524288, "lfhf");
