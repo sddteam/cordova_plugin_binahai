@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+
+  Bastion.inc Constacare App
+  Copyright (C) Bastion inc. All rights reserved.
+  https://www.bastion.inc
+-->
+<resources>
+  <string name="pulse_rate">Number of times your heart beats per minute. Normal resting rate is 60 to 100 beats for a healthy adult.</string>
+  <string name="respiration_rate">Number of breaths you take per minute. Normal at-rest Breathing Rate is 12 to20 breaths per minute for a healthy adult.</string>
+  <string name="prq">PRQ indicates the state of cardio respiratory activity. Normal quotient range is 4 to 5.</string>
+  <string name="oxygen_saturation">Measure of how much oxygen the red blood cells are carrying from the lungs to the rest of the body. Normal SpO2 for healthy lungs ranges between 95%-100%.</string>
+  <string name="blood_pressure">Pressure of blood exerted on the walls of the arteries, which carry blood from theheart to other parts of the body. Normal systolic pressure is from 100 to 129.</string>
+  <string name="hemoglobin">Protein in a person’s red blood cells that carries oxygen to the humanbody\'s organs and tissues. The healthy ranges are (Men: 14 to 18 g/dL, Women: 12 to 16 g/dL)</string>
+  <string name="hemoglobin_a1c">Represents the average blood glucose (sugar) level for the last two to three months. Normal is below 5.6%, 5.7% to 6.4% is Prediabetes risk and above 6.5% is Diabetes risk. </string>
+  <string name="wellness_score">The higher the wellness score, the lower the cardiovascular risk.</string>
+</resources>

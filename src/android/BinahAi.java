@@ -294,7 +294,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   @Override
   public void onBNHError(int errorCode) {
     PluginResult pluginResult = new PluginResult(PluginResult.Status.ERROR, errorCode);
-    pluginResult.setKeepCallback(true);
+    pluginResult.setKeepCallback(false);
     startCameraCallbackContext.sendPluginResult(pluginResult);
   }
 

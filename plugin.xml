@@ -11,6 +11,7 @@ xmlns:android="http://schemas.android.com/apk/res/android">
         <resource-file src="src/android/activity_camera.xml" target="res/layout/activity_camera.xml" />
         <resource-file src="src/android/face_detection.xml" target="res/drawable/face_detection.xml" />
         <resource-file src="src/android/binah_camera_theme.xml" target="res/values/binah_camera_theme.xml" />
+        <resource-file src="src/android/vital_strings.xml" target="res/values/vital_strings.xml"/>
         <edit-config file="res/values/strings.xml" target="/resources/" mode="append" >
             <string name="start">START</string>
             <string name="stop">STOP</string>
