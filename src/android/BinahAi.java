@@ -236,7 +236,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   }
 
   @Override
-  public void onFinalResult(JSONArray vitalSignsResults) {
+  public void onFinalResult(JSONObject vitalSignsResults) {
     if(imageValidationCallbackContext != null){
       PluginResult imageValidationPluginResult = new PluginResult(PluginResult.Status.OK);
       imageValidationPluginResult.setKeepCallback(false);
@@ -293,8 +293,8 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
 
   @Override
   public void onBNHError(int errorCode) {
-    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, errorCode);
-    pluginResult.setKeepCallback(true);
+    PluginResult pluginResult = new PluginResult(PluginResult.Status.ERROR, errorCode);
+    pluginResult.setKeepCallback(false);
     startCameraCallbackContext.sendPluginResult(pluginResult);
   }
 
