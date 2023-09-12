@@ -1,7 +1,11 @@
 package inc.bastion.binahai;
 
 import android.accessibilityservice.AccessibilityService;
+import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -31,6 +35,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -113,6 +119,9 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   private Timer imageValidationTimer;
   private boolean isValidationTimerRunning = false;
 
+  DBHelper _dbHelper;
+  SQLiteDatabase _db;
+
 
   public void setEventListener(ImagePreviewListener listener){
     eventListener = listener;
@@ -126,6 +135,9 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     _view = inflater.inflate(getResources().getIdentifier("activity_camera", "layout", appResourcePackage), container, false);
     initUi();
     mFaceDetection = createFaceDetectionBitmap();
+
+    _dbHelper = new DBHelper(getContext());
+    _db = _dbHelper.getWritableDatabase();
 
     return _view;
   }
@@ -328,15 +340,6 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
       //showAlert(null, "Create session error: " + e.getErrorCode());
       eventListener.onBNHCameraError(e);
     }
-  }
-
-  private void showAlert(String title, String message) {
-    new AlertDialog.Builder(getActivity())
-      .setTitle(title)
-      .setMessage(message)
-      .setPositiveButton("OK", null)
-      .setCancelable(false)
-      .show();
   }
 
   @Override
@@ -647,7 +650,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
             String signTypeName = SignTypeNames.SIGN_TYPE_NAMES.get(signType);
             JSONObject vitalSignObj = new JSONObject();
 
-            String[] keys = {"name", "value", "description"};
+            String[] keys = {"name", "value", "level", "description"};
 
             for(String key : keys){
               if(signValue.has(key)){
@@ -658,6 +661,36 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
           }
           isValidationTimerRunning = false;
           stopFaceValidationTimer();
+
+          LocalDateTime currentDateTime = LocalDateTime.now();
+
+          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+          String formattedDateTime = currentDateTime.format(formatter);
+
+          ContentValues values = new ContentValues();
+          values.put("date_time", formattedDateTime);
+          values.put("vital_signs_data", finalResult.toString());
+
+          long newRowId = _db.insert("ScanResult", null, values);
+
+          String[] projection = {"vital_signs_data"};
+          String selection = "measurement_id = ?";
+          String[] selectionArgs = {"1"};
+          Cursor cursor = _db.query("ScanResult", projection, selection, selectionArgs, null, null, null);
+
+          if(cursor.moveToFirst()){
+            do{
+              @SuppressLint("Range") String jsonDataString = cursor.getString(cursor.getColumnIndex("vital_signs_data"));
+              try {
+                JSONObject vitalSignObject = new JSONObject(jsonDataString);
+              }catch (JSONException e){
+                e.printStackTrace();
+              }
+            } while(cursor.moveToNext());
+          }
+
+          cursor.close();
+
           eventListener.onFinalResult(finalResult);
         }catch(JSONException e){
           e.printStackTrace();

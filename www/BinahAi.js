@@ -54,4 +54,20 @@ BinahAi.userFaceValidation = function (onSuccess, onError) {
     exec(onSuccess, onError, PLUGIN_NAME, 'userFaceValidation', []);
 };
 
+BinahAi.getAllHistory = function (onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'getAllHistory', []);  
+};
+
+BinahAi.getHistoryById = function (onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'getHistoryById', []);  
+};
+
+BinahAi.getHistoryByDateTime = function (onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'getHistoryByDateTime', []);
+}; 
+
+BinahAi.deleteHistoryById = function (onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'deleteHistoryById', []);
+};
+
 module.exports = BinahAi;
