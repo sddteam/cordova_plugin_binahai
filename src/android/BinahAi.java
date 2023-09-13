@@ -1,5 +1,6 @@
 package inc.bastion.binahai;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.util.Base64;
 import android.util.Log;
@@ -12,13 +13,17 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import ai.binah.sdk.api.HealthMonitorException;
 import ai.binah.sdk.api.session.Session;
@@ -36,6 +41,10 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   private static final String IMAGE_VALIDATION = "imageValidation";
   private static final String GET_SESSION_STATE = "getSessionState";
   private static final String USER_FACE_VALIDATION = "userFaceValidation";
+  private static final String GET_ALL_HISTORY = "getAllHistory";
+  private static final String GET_HISTORY_BY_ID = "getHistoryById";
+  private static final String GET_HISTORY_BY_DATE_TIME = "getHistoryByDateTime";
+  private static final String GET_VITAL_DESCRIPTION = "getVitalDescription";
 
   private CallbackContext startCameraCallbackContext;
   private CallbackContext stopCameraCallbackContext;
@@ -52,6 +61,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   private final int PERMISSION_REQUEST_CODE = 1234;
 
   private CameraActivity fragment;
+  private DatabaseManager databaseManager;
 
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -77,6 +87,10 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       return getSessionState(callbackContext);
     } else if (USER_FACE_VALIDATION.equals(action)) {
       return userFaceValidation(callbackContext);
+    } else if (GET_ALL_HISTORY.equals(action)){
+      return getAllHistory(callbackContext);
+    } else if (GET_VITAL_DESCRIPTION.equals(action)){
+      return getVitalDescription(callbackContext);
     }
     return false;
   }
@@ -224,6 +238,52 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
 
   private boolean getSessionState(CallbackContext callbackContext){
     getSessionStateCallbackContext = callbackContext;
+
+    return true;
+  }
+
+  private boolean getAllHistory(CallbackContext callbackContext) throws JSONException {
+    databaseManager = DatabaseManager.getInstance(cordova.getActivity().getApplicationContext());
+    ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);
+
+    List<ScanResult> scanResults = resultDAO.getAllResults();
+    JSONArray jsonArray = new JSONArray();
+
+    for(ScanResult scanResult : scanResults){
+      JSONObject jsonObject = new JSONObject();
+      jsonObject.put("measurement_id", scanResult.getMeasurement_id());
+      jsonObject.put("user_id", scanResult.getUser_id());
+      jsonObject.put("date_time", scanResult.getDate_time());
+      jsonObject.put("vital_signs_data", scanResult.getVital_signs_data());
+
+      jsonArray.put(jsonObject);
+    }
+
+    callbackContext.success(jsonArray);
+    return true;
+  }
+
+  private boolean getVitalDescription(CallbackContext callbackContext) throws JSONException {
+    String[] resourceNames = {
+      "blood_pressure",
+      "pulse_rate",
+      "prq",
+      "respiration_rate",
+      "wellness_score",
+      "hemoglobin",
+      "hemoglobin_a1c",
+      "oxygen_saturation"
+    };
+
+    JSONObject jsonObject = new JSONObject();
+    String appResourcePackage = cordova.getActivity().getPackageName();
+
+    for (String resourceName : resourceNames) {
+      int resourceId = cordova.getActivity().getResources().getIdentifier(resourceName, "string", appResourcePackage);
+      String resourceValue = cordova.getActivity().getString(resourceId);
+      jsonObject.put(resourceName, resourceValue);
+    }
+    callbackContext.success(jsonObject);
 
     return true;
   }

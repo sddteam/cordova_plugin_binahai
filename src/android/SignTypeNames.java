@@ -27,8 +27,8 @@ public class SignTypeNames {
     SIGN_TYPE_NAMES.put(131072, "wellnessIndex");
     SIGN_TYPE_NAMES.put(262144, "wellnessLevel");
     SIGN_TYPE_NAMES.put(524288, "lfhf");
-    SIGN_TYPE_NAMES.put(1048576, "HEMOGLOBIN");
-    SIGN_TYPE_NAMES.put(2097152, "HEMOGLOBIN_A1C");
+    SIGN_TYPE_NAMES.put(1048576, "hemoglobin");
+    SIGN_TYPE_NAMES.put(2097152, "hemoglobinA1c");
 
     // Add more sign type names as needed
   }

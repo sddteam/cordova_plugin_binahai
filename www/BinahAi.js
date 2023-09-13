@@ -70,4 +70,8 @@ BinahAi.deleteHistoryById = function (onSuccess, onError){
     exec(onSuccess, onError, PLUGIN_NAME, 'deleteHistoryById', []);
 };
 
+BinahAi.getVitalDescription = function (onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'getVitalDescription', []);
+};
+
 module.exports = BinahAi;
