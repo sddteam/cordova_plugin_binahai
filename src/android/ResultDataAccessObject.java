@@ -70,6 +70,37 @@ public class ResultDataAccessObject {
     return scanResults;
   }
 
+  public List<ScanResult> getResultsByDateTimeRange(String startDateTime, String endDateTime) throws JSONException {
+    List<ScanResult> scanResults = new ArrayList<>();
+    SQLiteDatabase db = databaseManager.getDatabase();
+
+    String selection = "date_time BETWEEN ? AND ?";
+    String[] selectionArgs = { startDateTime, endDateTime };
+
+    Cursor cursor = db.query("ScanResult", null, selection, selectionArgs, null, null, null);
+
+    if(cursor != null){
+      while (cursor.moveToNext()) {
+        @SuppressLint("Range") long measurementId = cursor.getLong(cursor.getColumnIndex("measurement_id"));
+        @SuppressLint("Range") long userId = cursor.getLong(cursor.getColumnIndex("user_id"));
+        @SuppressLint("Range") String dateTime = cursor.getString(cursor.getColumnIndex("date_time"));
+        @SuppressLint("Range") JSONObject vitalSignsData = new JSONObject(cursor.getString(cursor.getColumnIndex("vital_signs_data")));
+
+        ScanResult scanResult = new ScanResult();
+        scanResult.setMeasurement_id(measurementId);
+        scanResult.setUser_id(userId);
+        scanResult.setDate_time(dateTime);
+        scanResult.setVital_signs_data(vitalSignsData);
+
+        scanResults.add(scanResult);
+      }
+
+      cursor.close();
+    }
+
+    return scanResults;
+  }
+
   private int getCurrentResultCount(){
     SQLiteDatabase db = databaseManager.getDatabase();
     Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM ScanResult", null);

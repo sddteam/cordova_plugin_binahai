@@ -89,6 +89,9 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       return userFaceValidation(callbackContext);
     } else if (GET_ALL_HISTORY.equals(action)){
       return getAllHistory(callbackContext);
+    } else if (GET_HISTORY_BY_DATE_TIME.equals(action)){
+      String dateTime = args.getString(0);
+      return getHistoryByDateTime(callbackContext, dateTime);
     } else if (GET_VITAL_DESCRIPTION.equals(action)){
       return getVitalDescription(callbackContext);
     }
@@ -250,6 +253,30 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     JSONArray jsonArray = new JSONArray();
 
     for(ScanResult scanResult : scanResults){
+      JSONObject jsonObject = new JSONObject();
+      jsonObject.put("measurement_id", scanResult.getMeasurement_id());
+      jsonObject.put("user_id", scanResult.getUser_id());
+      jsonObject.put("date_time", scanResult.getDate_time());
+      jsonObject.put("vital_signs_data", scanResult.getVital_signs_data());
+
+      jsonArray.put(jsonObject);
+    }
+
+    callbackContext.success(jsonArray);
+    return true;
+  }
+
+  private boolean getHistoryByDateTime(CallbackContext callbackContext, String dateTime) throws JSONException {
+    databaseManager = DatabaseManager.getInstance(cordova.getActivity().getApplicationContext());
+    ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);
+
+    String startDateTime = dateTime + " 00:00:00";
+    String endDateTime = dateTime + " 23:59:59";
+
+    List<ScanResult> scanResults = resultDAO.getResultsByDateTimeRange(startDateTime, endDateTime);
+    JSONArray jsonArray = new JSONArray();
+
+    for (ScanResult scanResult : scanResults) {
       JSONObject jsonObject = new JSONObject();
       jsonObject.put("measurement_id", scanResult.getMeasurement_id());
       jsonObject.put("user_id", scanResult.getUser_id());

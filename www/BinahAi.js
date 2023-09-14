@@ -58,16 +58,16 @@ BinahAi.getAllHistory = function (onSuccess, onError){
     exec(onSuccess, onError, PLUGIN_NAME, 'getAllHistory', []);  
 };
 
-BinahAi.getHistoryById = function (onSuccess, onError){
-    exec(onSuccess, onError, PLUGIN_NAME, 'getHistoryById', []);  
+BinahAi.getHistoryById = function (measurementId, onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'getHistoryById', [measurementId]);  
 };
 
-BinahAi.getHistoryByDateTime = function (onSuccess, onError){
-    exec(onSuccess, onError, PLUGIN_NAME, 'getHistoryByDateTime', []);
+BinahAi.getHistoryByDateTime = function (dateTime, onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'getHistoryByDateTime', [dateTime]);
 }; 
 
-BinahAi.deleteHistoryById = function (onSuccess, onError){
-    exec(onSuccess, onError, PLUGIN_NAME, 'deleteHistoryById', []);
+BinahAi.deleteHistoryById = function (measurementId, onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'deleteHistoryById', [measurementId]);
 };
 
 BinahAi.getVitalDescription = function (onSuccess, onError){

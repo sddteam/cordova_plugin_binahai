@@ -650,6 +650,8 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
             for(String key : keys){
               if(signValue.has(key)){
                 vitalSignObj.put(key, signValue.get(key));
+              }else{
+                vitalSignObj.put(key, signTypeName);
               }
             }
             finalResult.put(signTypeName, vitalSignObj);
