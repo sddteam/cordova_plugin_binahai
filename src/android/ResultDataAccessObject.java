@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ResultDataAccessObject {
-  private static final int MAX_TABLE_ROWS = 3;
+  private static final int MAX_TABLE_ROWS = 20;
   private DatabaseManager databaseManager;
 
   public ResultDataAccessObject(DatabaseManager databaseManager){
@@ -41,6 +41,11 @@ public class ResultDataAccessObject {
   public void deleteResult(long measurement_id){
     SQLiteDatabase db = databaseManager.getDatabase();
     db.delete("ScanResult", "measurement_id = ?", new String[]{String.valueOf(measurement_id)});
+  }
+
+  public void deleteAllResults() {
+    SQLiteDatabase db = databaseManager.getDatabase();
+    db.delete("ScanResult", null, null);
   }
 
   public List<ScanResult> getAllResults() throws JSONException {

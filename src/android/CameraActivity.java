@@ -37,6 +37,7 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -659,18 +660,20 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
           isValidationTimerRunning = false;
           stopFaceValidationTimer();
 
-          LocalDateTime currentDateTime = LocalDateTime.now();
-          DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-          String dateTime = currentDateTime.format(formatter);
+          if(finalResult.length() > 0){
+            LocalDateTime currentDateTime = LocalDateTime.now();//.minus(7, ChronoUnit.DAYS);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String dateTime = currentDateTime.format(formatter);
 
-          ScanResult scanResult = new ScanResult(1, dateTime, finalResult);
+            ScanResult scanResult = new ScanResult(1, dateTime, finalResult);
 
-          databaseManager = DatabaseManager.getInstance(getActivity().getApplicationContext());
+            databaseManager = DatabaseManager.getInstance(getActivity().getApplicationContext());
 
-          ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);
+            ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);
 
-          long insertedId = resultDAO.insertResult(scanResult);
-          List<ScanResult> scanResultList = resultDAO.getAllResults();
+            long insertedId = resultDAO.insertResult(scanResult);
+            List<ScanResult> scanResultList = resultDAO.getAllResults();
+          }
           eventListener.onFinalResult(finalResult);
         }catch(JSONException e){
           e.printStackTrace();

@@ -245,48 +245,66 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return true;
   }
 
-  private boolean getAllHistory(CallbackContext callbackContext) throws JSONException {
-    databaseManager = DatabaseManager.getInstance(cordova.getActivity().getApplicationContext());
-    ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);
+  private boolean getAllHistory(CallbackContext callbackContext) {
+    cordova.getThreadPool().execute(new Runnable() {
+      @Override
+      public void run() {
+        try{
+          databaseManager = DatabaseManager.getInstance(cordova.getActivity().getApplicationContext());
+          ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);
 
-    List<ScanResult> scanResults = resultDAO.getAllResults();
-    JSONArray jsonArray = new JSONArray();
+          List<ScanResult> scanResults = resultDAO.getAllResults();
+          JSONArray jsonArray = new JSONArray();
 
-    for(ScanResult scanResult : scanResults){
-      JSONObject jsonObject = new JSONObject();
-      jsonObject.put("measurement_id", scanResult.getMeasurement_id());
-      jsonObject.put("user_id", scanResult.getUser_id());
-      jsonObject.put("date_time", scanResult.getDate_time());
-      jsonObject.put("vital_signs_data", scanResult.getVital_signs_data());
+          for(ScanResult scanResult : scanResults){
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("measurement_id", scanResult.getMeasurement_id());
+            jsonObject.put("user_id", scanResult.getUser_id());
+            jsonObject.put("date_time", scanResult.getDate_time());
+            jsonObject.put("vital_signs_data", scanResult.getVital_signs_data());
 
-      jsonArray.put(jsonObject);
-    }
+            jsonArray.put(jsonObject);
+          }
 
-    callbackContext.success(jsonArray);
+          callbackContext.success(jsonArray);
+        }catch (JSONException e){
+          e.printStackTrace();
+        }
+      }
+    });
     return true;
   }
 
-  private boolean getHistoryByDateTime(CallbackContext callbackContext, String dateTime) throws JSONException {
-    databaseManager = DatabaseManager.getInstance(cordova.getActivity().getApplicationContext());
-    ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);
+  private boolean getHistoryByDateTime(CallbackContext callbackContext, String dateTime){
+    cordova.getThreadPool().execute(new Runnable() {
+      @Override
+      public void run() {
+        try{
+          databaseManager = DatabaseManager.getInstance(cordova.getActivity().getApplicationContext());
+          ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);
 
-    String startDateTime = dateTime + " 00:00:00";
-    String endDateTime = dateTime + " 23:59:59";
+          String startDateTime = dateTime + " 00:00:00";
+          String endDateTime = dateTime + " 23:59:59";
 
-    List<ScanResult> scanResults = resultDAO.getResultsByDateTimeRange(startDateTime, endDateTime);
-    JSONArray jsonArray = new JSONArray();
+          List<ScanResult> scanResults = resultDAO.getResultsByDateTimeRange(startDateTime, endDateTime);
+          JSONArray jsonArray = new JSONArray();
 
-    for (ScanResult scanResult : scanResults) {
-      JSONObject jsonObject = new JSONObject();
-      jsonObject.put("measurement_id", scanResult.getMeasurement_id());
-      jsonObject.put("user_id", scanResult.getUser_id());
-      jsonObject.put("date_time", scanResult.getDate_time());
-      jsonObject.put("vital_signs_data", scanResult.getVital_signs_data());
+          for (ScanResult scanResult : scanResults) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("measurement_id", scanResult.getMeasurement_id());
+            jsonObject.put("user_id", scanResult.getUser_id());
+            jsonObject.put("date_time", scanResult.getDate_time());
+            jsonObject.put("vital_signs_data", scanResult.getVital_signs_data());
 
-      jsonArray.put(jsonObject);
-    }
+            jsonArray.put(jsonObject);
+          }
 
-    callbackContext.success(jsonArray);
+          callbackContext.success(jsonArray);
+        }catch (JSONException e){
+          e.printStackTrace();
+        }
+      }
+    });
     return true;
   }
 
