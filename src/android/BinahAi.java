@@ -1,5 +1,7 @@
 package inc.bastion.binahai;
 
+import android.content.res.AssetManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.util.Base64;
 import android.util.Log;
@@ -10,19 +12,56 @@ import android.widget.FrameLayout;
 
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import androidx.lifecycle.Observer;
 
 import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.CordovaWebView;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 import ai.binah.sdk.api.HealthMonitorException;
 import ai.binah.sdk.api.session.Session;
 import ai.binah.sdk.api.session.SessionState;
+import ai.binah.sdk.api.vital_signs.VitalSignConfidence;
+import ai.binah.sdk.api.vital_signs.VitalSignTypes;
+import ai.binah.sdk.api.vital_signs.vitals.RRI;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignBloodPressure;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignHemoglobin;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignHemoglobinA1C;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignLFHF;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignMeanRRI;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignOxygenSaturation;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignPNSIndex;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignPNSZone;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignPRQ;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignPulseRate;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignRMSSD;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignRRI;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignRespirationRate;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignSD1;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignSD2;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignSDNN;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignSNSIndex;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignSNSZone;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignStressIndex;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignStressLevel;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignWellnessIndex;
+import ai.binah.sdk.api.vital_signs.vitals.VitalSignWellnessLevel;
 
 public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePreviewListener {
   private static final String TAG = "BinahAi";
@@ -36,9 +75,12 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   private static final String IMAGE_VALIDATION = "imageValidation";
   private static final String GET_SESSION_STATE = "getSessionState";
   private static final String USER_FACE_VALIDATION = "userFaceValidation";
+  private static final String GET_ALL_HISTORY = "getAllHistory";
+  private static final String GET_HISTORY_BY_ID = "getHistoryById";
+  private static final String GET_HISTORY_BY_DATE_TIME = "getHistoryByDateTime";
+  private static final String GET_VITAL_DESCRIPTION = "getVitalDescription";
 
   private CallbackContext startCameraCallbackContext;
-  private CallbackContext stopCameraCallbackContext;
   private CallbackContext startScanCallbackContext;
   private CallbackContext stopScanCallbackContext;
   private CallbackContext imageValidationCallbackContext;
@@ -49,9 +91,9 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   private boolean toBack = true;
   private ViewParent webViewParent;
   private String _base64Image;
-  private final int PERMISSION_REQUEST_CODE = 1234;
 
   private CameraActivity fragment;
+  private DatabaseManager databaseManager;
 
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
@@ -77,6 +119,16 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       return getSessionState(callbackContext);
     } else if (USER_FACE_VALIDATION.equals(action)) {
       return userFaceValidation(callbackContext);
+    } else if (GET_ALL_HISTORY.equals(action)){
+      return getAllHistory(callbackContext);
+    } else if (GET_HISTORY_BY_DATE_TIME.equals(action)){
+      String dateTime = args.getString(0);
+      return getHistoryByDateTime(callbackContext, dateTime);
+    } else if (GET_HISTORY_BY_ID.equals(action)){
+      String measurementId = args.getString(0);
+      return getHistoryById(callbackContext, measurementId);
+    } else if (GET_VITAL_DESCRIPTION.equals(action)){
+      return getVitalDescription(callbackContext);
     }
     return false;
   }
@@ -155,7 +207,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return true;
   }
 
-  public boolean stopCamera(CallbackContext callbackContext){
+  private boolean stopCamera(CallbackContext callbackContext){
     if(webViewParent != null){
       cordova.getActivity().runOnUiThread(new Runnable() {
         @Override
@@ -228,6 +280,203 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return true;
   }
 
+  private boolean getAllHistory(CallbackContext callbackContext) {
+    cordova.getThreadPool().execute(new Runnable() {
+      @Override
+      public void run() {
+        try{
+          databaseManager = DatabaseManager.getInstance(cordova.getActivity().getApplicationContext());
+          ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);
+
+          List<ScanResult> scanResults = resultDAO.getAllResults();
+          JSONArray jsonArray = new JSONArray();
+
+          for(ScanResult scanResult : scanResults){
+            JSONObject jsonObject = parseVitalSignData(scanResult);
+            jsonArray.put(jsonObject);
+          }
+
+          File file = new File(cordova.getContext().getFilesDir(), "vital_signs_data.json");
+          FileOutputStream fos = new FileOutputStream(file);
+          fos.write(jsonArray.toString().getBytes());
+          fos.close();
+
+          callbackContext.success(jsonArray);
+        }catch (JSONException | IOException e){
+          e.printStackTrace();
+        }
+      }
+    });
+    return true;
+  }
+
+  private boolean getHistoryByDateTime(CallbackContext callbackContext, String dateTime){
+    cordova.getThreadPool().execute(new Runnable() {
+      @Override
+      public void run() {
+        try{
+          databaseManager = DatabaseManager.getInstance(cordova.getActivity().getApplicationContext());
+          ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);
+
+          String startDateTime = dateTime + " 00:00:00";
+          String endDateTime = dateTime + " 23:59:59";
+
+          List<ScanResult> scanResults = resultDAO.getResultsByDateTimeRange(startDateTime, endDateTime);
+          JSONArray jsonArray = new JSONArray();
+
+          for (ScanResult scanResult : scanResults) {
+            JSONObject jsonObject = parseVitalSignData(scanResult);
+            jsonArray.put(jsonObject);
+          }
+
+          callbackContext.success(jsonArray);
+        }catch (JSONException e){
+          e.printStackTrace();
+        }
+      }
+    });
+    return true;
+  }
+
+  private boolean getHistoryById(CallbackContext callbackContext, String measurementId){
+    cordova.getThreadPool().execute(new Runnable() {
+      @Override
+      public void run() {
+        databaseManager = DatabaseManager.getInstance(cordova.getActivity().getApplicationContext());
+        ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);
+
+        ScanResult scanResult = resultDAO.getResultsByMeasurementId(measurementId);
+        JSONObject jsonObject = parseVitalSignData(scanResult);
+
+        callbackContext.success(jsonObject);
+      }
+    });
+    return true;
+  }
+
+  private boolean getVitalDescription(CallbackContext callbackContext){
+    JSONObject jsonObject = getVitalInfo();
+    callbackContext.success(jsonObject);
+
+    return true;
+  }
+
+  private JSONObject parseVitalSignData(ScanResult scanResult){
+    JSONObject vitalInfo = getVitalInfo();
+    JSONObject jsonObject = new JSONObject();
+    try{
+      jsonObject.put("measurement_id", scanResult.getMeasurement_id());
+      jsonObject.put("user_id", scanResult.getUser_id());
+      jsonObject.put("date_time", scanResult.getDate_time());
+
+      Iterator<String> keys = scanResult.getVital_signs_data().keys();
+      while (keys.hasNext()) {
+        String key = keys.next();
+        String signTypeName = SignTypeNames.SIGN_TYPE_NAMES.get(Integer.parseInt(key));
+        vitalInfo.getJSONObject(signTypeName).put("value", scanResult.getVital_signs_data().get(key));
+        vitalInfo.getJSONObject(signTypeName).put("level", getVitalSignLevel(String.valueOf(scanResult.getVital_signs_data().get(key)), Integer.parseInt(key)));
+      }
+      jsonObject.put("vital_signs_data", vitalInfo);
+    }catch(JSONException e){
+      e.printStackTrace();
+    }
+
+    return jsonObject;
+  }
+
+  private JSONObject getVitalInfo(){
+    AssetManager assetManager = cordova.getActivity().getAssets();
+    JSONObject jsonObject = new JSONObject();
+    try{
+      InputStream inputStream = assetManager.open("www/assets/vital_info.json");
+      BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+      StringBuilder stringBuilder = new StringBuilder();
+      String line;
+
+      while ((line = bufferedReader.readLine()) != null){
+        stringBuilder.append(line);
+      }
+
+      String jsonData = stringBuilder.toString();
+      jsonObject = new JSONObject(jsonData);
+    }catch(IOException | JSONException e){
+      e.printStackTrace();
+    }
+
+    return jsonObject;
+  }
+
+  private String getVitalSignLevel(String values, int key){
+    double value = 0;
+    try{
+      value = Double.parseDouble(values);
+    }catch (NumberFormatException e){
+
+    }
+    switch (key) {
+      case VitalSignTypes.BLOOD_PRESSURE:
+        String[] str = values.split("/");
+        int systolic = Integer.parseInt(str[0].trim());
+        return determineSignLevel(systolic, 100, 129);
+      case VitalSignTypes.PULSE_RATE:
+        return determineSignLevel(value, 60, 100);
+      case VitalSignTypes.LFHF:
+      case VitalSignTypes.MEAN_RRI:
+        return determineSignLevel(value, 600, 1000);
+      case VitalSignTypes.OXYGEN_SATURATION:
+        return determineSignLevel(value, 95, 100);
+      case VitalSignTypes.PNS_INDEX:
+      case VitalSignTypes.SNS_INDEX:
+        return determineSignLevel(value, -1, 1);
+      case VitalSignTypes.PNS_ZONE:
+      case VitalSignTypes.WELLNESS_LEVEL:
+      case VitalSignTypes.STRESS_LEVEL:
+      case VitalSignTypes.SNS_ZONE:
+        return values;
+      case VitalSignTypes.PRQ:
+        return determineSignLevel(value, 4, 5);
+      case VitalSignTypes.RMSSD:
+        return determineSignLevel(value, 25, 43);
+      case VitalSignTypes.RRI:
+        break;
+      case VitalSignTypes.RESPIRATION_RATE:
+        return determineSignLevel(value, 12, 20);
+      case VitalSignTypes.SD1:
+        break;
+      case VitalSignTypes.SD2:
+        break;
+      case VitalSignTypes.SDNN:
+        return determineSignLevel(value, 50, 50);
+      case VitalSignTypes.STRESS_INDEX:
+        break;
+      case VitalSignTypes.WELLNESS_INDEX:
+        break;
+      case VitalSignTypes.HEMOGLOBIN:
+        return determineSignLevel(value, 14, 18);
+      case VitalSignTypes.HEMOGLOBIN_A1C:
+        String state;
+        if(value < 5.7){
+          state = "Normal";
+        }else if(value >= 6.4){
+          state = "Prediabetes Risk";
+        }else{
+          state = "Diabetes Risk";
+        }
+        return state;
+    }
+    return null;
+  }
+
+  private String determineSignLevel(double value, int lowThreshold, int highThreshold){
+    if(value < lowThreshold){
+      return "Low";
+    }else if(value <= highThreshold){
+      return "Normal";
+    }else{
+      return "High";
+    }
+  }
+
   @Override
   public void onStartScan(JSONObject vitalSign) {
     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, vitalSign);
@@ -236,7 +485,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   }
 
   @Override
-  public void onFinalResult(JSONObject vitalSignsResults) {
+  public void onFinalResult(long vitalSignsResults) {
     if(imageValidationCallbackContext != null){
       PluginResult imageValidationPluginResult = new PluginResult(PluginResult.Status.OK);
       imageValidationPluginResult.setKeepCallback(false);

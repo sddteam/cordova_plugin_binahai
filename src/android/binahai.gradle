@@ -1,4 +1,5 @@
 dependencies{
     implementation files('src/main/libs/bnhsdk.aar')
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.sqlite:sqlite:2.3.1'
 }

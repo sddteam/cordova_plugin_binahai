@@ -1,7 +1,11 @@
 package inc.bastion.binahai;
 
 import android.accessibilityservice.AccessibilityService;
+import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -31,6 +35,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -87,7 +94,7 @@ import ai.binah.sdk.session.FaceSessionBuilder;
 public class CameraActivity extends Fragment implements ImageListener, SessionInfoListener, VitalSignsListener{
   public interface ImagePreviewListener{
     void onStartScan(JSONObject vitalSign);
-    void onFinalResult(JSONObject vitalSignsResults);
+    void onFinalResult(long vitalSignsResults);
     void onImageValidation(JSONObject imageValidationCode);
     void onSessionState(String sessionState);
     void onBNHCameraStarted(Session session);
@@ -113,6 +120,8 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   private Timer imageValidationTimer;
   private boolean isValidationTimerRunning = false;
 
+  private DatabaseManager databaseManager;
+
 
   public void setEventListener(ImagePreviewListener listener){
     eventListener = listener;
@@ -126,6 +135,8 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     _view = inflater.inflate(getResources().getIdentifier("activity_camera", "layout", appResourcePackage), container, false);
     initUi();
     mFaceDetection = createFaceDetectionBitmap();
+
+    databaseManager = DatabaseManager.getInstance(getActivity().getApplicationContext());
 
     return _view;
   }
@@ -330,15 +341,6 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     }
   }
 
-  private void showAlert(String title, String message) {
-    new AlertDialog.Builder(getActivity())
-      .setTitle(title)
-      .setMessage(message)
-      .setPositiveButton("OK", null)
-      .setCancelable(false)
-      .show();
-  }
-
   @Override
   public void onSessionStateChange(SessionState sessionState) {
     getActivity().runOnUiThread(() -> {
@@ -350,7 +352,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   @Override
   public void onWarning(WarningData warningData) {
     getActivity().runOnUiThread(() -> {
-      Toast.makeText(getContext(), "Domain: "+ warningData.getDomain() + " Warning: " + warningData.getCode(), Toast.LENGTH_SHORT).show();
+      //Toast.makeText(getContext(), "Domain: "+ warningData.getDomain() + " Warning: " + warningData.getCode(), Toast.LENGTH_SHORT).show();
       eventListener.onBNHWarning(warningData.getCode());
     });
   }
@@ -443,16 +445,6 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     }
   }
 
-  private String determineSignLevel(int value, int lowThreshold, int highThreshold){
-    if(value < lowThreshold){
-      return "Low";
-    }else if(value <= highThreshold){
-      return "Normal";
-    }else{
-      return "High";
-    }
-  }
-
   @Override
   public void onFinalResults(VitalSignsResults vitalSignsResults) {
     if(_vitalHolder != null){
@@ -479,17 +471,12 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
                 int systolicValue = bloodPressure.getValue().getSystolic();
                 String bloodPressureValue = bloodPressure.getValue().getSystolic() + "/" + bloodPressure.getValue().getDiastolic();
                 results.put("value",bloodPressureValue);
-                results.put("level",determineSignLevel(systolicValue, 100, 129));
-                results.put("description",getString(getActivity().getResources().getIdentifier("blood_pressure", "string", appResourcePackage)));
                 _signResults.put(signType, results);
                 break;
               case VitalSignTypes.PULSE_RATE:
                 VitalSignPulseRate pulseRate = (VitalSignPulseRate) sign;
                 int pulseRateValue = pulseRate.getValue();
-                VitalSignConfidence pr = pulseRate.getConfidence();
                 results.put("value", pulseRateValue);
-                results.put("level", determineSignLevel(pulseRateValue, 60, 100));
-                results.put("description", getString(getActivity().getResources().getIdentifier("pulse_rate", "string", appResourcePackage)));
                 _signResults.put(signType, results);
                 break;
               case VitalSignTypes.LFHF:
@@ -508,8 +495,6 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
                 VitalSignOxygenSaturation oxygenSaturation = (VitalSignOxygenSaturation) sign;
                 int oxygenSaturationValue = oxygenSaturation.getValue();
                 results.put("value", oxygenSaturationValue);
-                results.put("level", determineSignLevel(oxygenSaturationValue, 95, 100));
-                results.put("description", getString(getActivity().getResources().getIdentifier("oxygen_saturation", "string", appResourcePackage)));
                 _signResults.put(signType, results);
                 break;
               case VitalSignTypes.PNS_INDEX:
@@ -528,8 +513,6 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
                 VitalSignPRQ prq = (VitalSignPRQ) sign;
                 double prqValue = prq.getValue();
                 results.put("value", prqValue);
-                results.put("level", determineSignLevel((int) prqValue, 4, 5));
-                results.put("description", getString(getActivity().getResources().getIdentifier("prq", "string", appResourcePackage)));
                 _signResults.put(signType, results);
                 break;
               case VitalSignTypes.RMSSD:
@@ -553,8 +536,6 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
                 VitalSignRespirationRate respirationRate = (VitalSignRespirationRate) sign;
                 int respirationRateValue = respirationRate.getValue();
                 results.put("value", respirationRateValue);
-                results.put("level", determineSignLevel(respirationRateValue, 12, 20));
-                results.put("description", getString(getActivity().getResources().getIdentifier("respiration_rate", "string", appResourcePackage)));
                 _signResults.put(signType, results);
                 break;
               case VitalSignTypes.SD1:
@@ -603,38 +584,24 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
                 VitalSignWellnessIndex wellnessIndex = (VitalSignWellnessIndex) sign;
                 int wellnessIndexValue = wellnessIndex.getValue();
                 results.put("value",wellnessIndexValue);
-                results.put("description", getString(getActivity().getResources().getIdentifier("wellness_score", "string", appResourcePackage)));
                 _signResults.put(signType, results);
                 break;
               case VitalSignTypes.WELLNESS_LEVEL:
                 VitalSignWellnessLevel wellnessLevel = (VitalSignWellnessLevel) sign;
                 String wellnessLevelValue = wellnessLevel.getValue().name();
                 results.put("value", wellnessLevelValue);
-                results.put("description", getString(getActivity().getResources().getIdentifier("wellness_score", "string", appResourcePackage)));
                 _signResults.put(signType, results);
                 break;
               case VitalSignTypes.HEMOGLOBIN:
                 VitalSignHemoglobin hemoglobin = (VitalSignHemoglobin) sign;
                 double hemoglobinValue = hemoglobin.getValue();
                 results.put("value", hemoglobinValue);
-                results.put("level", determineSignLevel((int) hemoglobinValue, 14, 18));
-                results.put("description", getString(getActivity().getResources().getIdentifier("hemoglobin", "string", appResourcePackage)));
                 _signResults.put(signType, results);
                 break;
               case VitalSignTypes.HEMOGLOBIN_A1C:
                 VitalSignHemoglobinA1C hemoglobinA16 = (VitalSignHemoglobinA1C) sign;
                 double hemoglobinA1CValue = hemoglobinA16.getValue();
                 results.put("value", hemoglobinA1CValue);
-                String state;
-                if(hemoglobinA1CValue < 5.7){
-                  state = "Normal";
-                }else if(hemoglobinA1CValue >= 6.4){
-                  state = "Prediabetes Risk";
-                }else{
-                  state = "Diabetes Risk";
-                }
-                results.put("level", state);
-                results.put("description", getString(getActivity().getResources().getIdentifier("hemoglobin_a1c", "string", appResourcePackage)));
                 _signResults.put(signType, results);
                 break;
             }
@@ -644,21 +611,32 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
           for (Map.Entry<Integer, JSONObject> entry : _signResults.entrySet()){
             Integer signType = entry.getKey();
             JSONObject signValue = entry.getValue();
+
             String signTypeName = SignTypeNames.SIGN_TYPE_NAMES.get(signType);
-            JSONObject vitalSignObj = new JSONObject();
 
-            String[] keys = {"name", "value", "description"};
-
+            String[] keys = {"value"};
             for(String key : keys){
               if(signValue.has(key)){
-                vitalSignObj.put(key, signValue.get(key));
+                finalResult.put(String.valueOf(signType), signValue.get(key));
               }
             }
-            finalResult.put(signTypeName, vitalSignObj);
           }
           isValidationTimerRunning = false;
           stopFaceValidationTimer();
-          eventListener.onFinalResult(finalResult);
+
+          if(finalResult.length() > 0){
+            LocalDateTime currentDateTime = LocalDateTime.now();//.minus(7, ChronoUnit.DAYS);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String dateTime = currentDateTime.format(formatter);
+
+            ScanResult scanResult = new ScanResult(1, dateTime, finalResult);
+
+            databaseManager = DatabaseManager.getInstance(getActivity().getApplicationContext());
+            ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);
+
+            long insertedId = resultDAO.insertResult(scanResult);
+            eventListener.onFinalResult(insertedId);
+          }
         }catch(JSONException e){
           e.printStackTrace();
         }
