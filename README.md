@@ -4,7 +4,7 @@ description: Integrate BinahAi SDK to cordova.
 sdk version: 5.0.5
 ---
 
-# UPDATED README!!! - 08/03/2023
+# UPDATED README!!! - 09/21/2023
 <!--
 # license: Licensed to the Apache Software Foundation (ASF) under one
 #         or more contributor license agreements.  See the NOTICE file
@@ -79,7 +79,11 @@ Also remove the dark mode theme from the `variables.scss` file.
 - startScan
 - stopScan
 - imageValidation
-- getSessionState - ondev
+- getSessionState
+- userFaceValidation
+- getAllMeasurement
+- getMeasurementById
+- getMeasurementByDateTime
 
 # Methods
 
@@ -128,8 +132,8 @@ Start the measurement.
 ```ts 
 BinahAi.startScan().subscribe({
   next: (result) => {
-    if(Object.keys(result).length > 3){
-      console.log("FINAL RESULTS: " + JSON.stringify(result, null, 4));
+    if(typeOf result === 'number'){
+      const measurementId = result;
     }else{
       console.log("LIVE RESULTS: " + JSON.stringify(result, null, 4));
     }
@@ -139,7 +143,9 @@ BinahAi.startScan().subscribe({
 });
 ```
 
-Returns an `{Obervable<any>}`, wrap the results with the provided interface `[LiveMeasurements, FinalResult]` which is the two type of result for start scan. During measurement the `LiveMeasurement` are being returned upon manually stopping the measurement or stopped after measurement duration the `FinalResult` will be returned.
+Returns an `{Obervable<any>}`. During measurement the `LiveMeasurement` are being returned upon manually stopping the measurement or stopped after specified duration the `FinalResult` will be returned which is the `measurement_id` that is saved locally to the user device.
+
+The `measurement_id` can now be used to get the vital signs data using the `getMeasurementById` method.
 
 ## stopScan([successCallback, errorCallback])
 
@@ -174,7 +180,7 @@ The following are conditions that will invalidate the image for processing by th
 
 Returns a `{Observable<any>}` with the image validation code.
 
-## getSessionState([successCallback, errorCallback]) - ondev
+## getSessionState([successCallback, errorCallback])
 
 Retrieve the current state of the session.
 
@@ -198,12 +204,46 @@ this.binahAi.getSessionState().subscribe({
   }
 });
 ```
+## getAllMeasurement([successCallback, errorCallback])
 
-## getApiLevel([successCallback, errorCallback])
+Get all the measurement that is saved to the user device.
 
-Get device API level.
+```ts
+const result = await this.binahAi.getAllMeasurement();
+```
 
-    var string = binahAi.getApiLevel();
+Returns a `Promise<any>` with the following data as JSONArray.
+
+- `measurement_id` - unique measurement identifier.
+- `user_id` - id of the current user the measurement belongs to.
+- `date_time` - date and time the measurement is taken.
+- `vital_signs_data` - all vital signs data including all the neccessary variables in a `JSONObject` format, ex. vital_signs_data.pulseRate
+
+| vitalSign  |  description  |
+| ------------- | ------------- |
+| name | vital sign formatted name |
+| summary_description | a short description of the vital sign |
+| full_description | full description text |
+| unit_m | unit of measurement |
+| value | vital sign value |
+    
+
+## getMeasurementById(measurementId, [successCallback, errorCallback])
+
+Returns a single `Promise<any>` of scan result.
+
+```ts
+const result = await this.binahAi.getMeasurementById(measurementId);
+```
+
+## getMeasurementByDateTime(dateTime, [successCallback, errorCallback])
+
+Returns an array `Promise<any>` of scan result.
+
+```ts
+const result = await this.binahAi.getMeasurementByDateTime(dateTime);
+```
+The dateTime is a string in this format `YYYY-MM-DD`.
 
 # Sample App
 <a href="https://github.com/marhano/binah_ionic_prototype">binah_ionic_prototype</a> for a complete working Cordova example for Android platforms.
