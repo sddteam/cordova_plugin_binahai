@@ -16,19 +16,29 @@ public class DBHelper extends SQLiteOpenHelper {
 
   @Override
   public void onCreate(SQLiteDatabase db) {
-    Log.d("DBHELPER", "OnCreate");
     String createTableQuery = "CREATE TABLE IF NOT EXISTS ScanResult (" +
       "measurement_id INTEGER PRIMARY KEY AUTOINCREMENT, "+
       "user_id INTEGER,"+
       "date_time TEXT, "+
       "vital_signs_data TEXT)";
     db.execSQL(createTableQuery);
+
+    String createUserInfoTableQuery = "CREATE TABLE IF NOT EXISTS UserInfo (" +
+      "user_id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+      "first_name TEXT, " +
+      "last_name TEXT, " +
+      "birthday TEXT, " +
+      "sex TEXT, " +
+      "weight INTEGER, " +
+      "height INTEGER)";
+    db.execSQL(createUserInfoTableQuery);
   }
 
   @Override
   public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     if(oldVersion < newVersion){
       db.execSQL("DROP TABLE IF EXISTS ScanResult");
+      db.execSQL("DROP TABLE IF EXISTS UserInfo");
       onCreate(db);
     }
   }

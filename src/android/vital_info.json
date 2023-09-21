@@ -1,0 +1,135 @@
+{
+    "pulseRate": {
+      "name": "Heart Rate",
+      "full_description": "",
+      "summary_description": "Number of times your heart beats per minute. Normal resting rate is 60 to 100 beats for a healthy adult.",
+      "unit_m": "bpm"
+    },
+    "respirationRate": {
+      "name": "Breathing Rate",
+      "full_description": "",
+      "summary_description": "Number of breaths you take per minute. Normal at-rest Breathing Rate is 12 to20 breaths per minute for a healthy adult.",
+      "unit_m": "brpm"
+    },
+    "prq": {
+      "name": "PRQ",
+      "full_description": "",
+      "summary_description": "PRQ indicates the state of cardio respiratory activity. Normal quotient range is 4 to 5.",
+      "unit_m": ""
+    },
+    "oxygenSaturation": {
+      "name": "Oxygen Saturation",
+      "full_description": "",
+      "summary_description": "Measure of how much oxygen the red blood cells are carrying from the lungs to the rest of the body. Normal SpO2 for healthy lungs ranges between 95%-100%.",
+      "unit_m": "%"
+    },
+    "bloodPressure": {
+      "name": "Blood Pressure",
+      "full_description": "",
+      "summary_description": "Pressure of blood exerted on the walls of the arteries, which carry blood from theheart to other parts of the body. Normal systolic pressure is from 100 to 129.",
+      "unit_m": "mmHg"
+    },
+    "hemoglobin": {
+      "name": "Hemoglobin",
+      "full_description": "",
+      "summary_description": "Protein in a person’s red blood cells that carries oxygen to the humanbody\\'s organs and tissues. The healthy ranges are (Men: 14 to 18 g/dL, Women: 12 to 16 g/dL)",
+      "unit_m": "g/dL"
+    },
+    "hemoglobinA1c": {
+      "name": "Hemoglobin A1c",
+      "full_description": "",
+      "summary_description": "Represents the average blood glucose (sugar) level for the last two to three months. Normal is below 5.6%, 5.7% to 6.4% is Prediabetes risk and above 6.5% is Diabetes risk.",
+      "unit_m": ""
+    },
+    "stressLevel": {
+      "name": "Stress Level",
+      "full_description": "",
+      "summary_description": "The body's reaction to a challenge or demand. There are five levels of stress.",
+      "unit_m": ""
+    },
+    "stressIndex": {
+      "name": "Stress Index",
+      "full_description": "",
+      "summary_description": "Stress is the body's reaction to a challenge or demand.",
+      "unit_m": ""
+    },
+    "pnsZone": {
+      "name": "PNS Zone",
+      "full_description": "",
+      "summary_description": "Refers to the body’s ability to recover, accumulate energy, and regulate bodily functions after stressful occurrences.",
+      "unit_m": ""
+    },
+    "pnsIndex": {
+      "name": "PNS Index",
+      "full_description": "",
+      "summary_description": "The PNS Index calculation is based on the following three parameters: Mean RRi,RMSSD, and SD1, and is used to indicate the body’s Recovery Ability zones.",
+      "unit_m": ""
+    },
+    "meanRri": {
+      "name": "Mean RRi",
+      "full_description": "",
+      "summary_description": "Mean RRi is the average time between the RR intervals (RRi) in milliseconds. RRi is the variation of the interval between successive heartbeats. A longer Mean RR interval indicates a lower heart rate and higher parasympathetic cardiac activation.",
+      "unit_m": ""
+    },
+    "rmssd": {
+      "name": "RMSSD",
+      "full_description": "",
+      "summary_description": "An important measure of the Heart Rate Variability. RMSSD is the root mean square of successive RR interval differences.",
+      "unit_m": "ms"
+    },
+    "sd1": {
+      "name": "SD1",
+      "full_description": "",
+      "summary_description": "SD1 is a poincaré plot standard deviation perpendicular to the line of identity.\nSD1 is one of the parameters used to calculate the PNS Index, along with RRi and RMSSD.",
+      "unit_m": "ms"
+    },
+    "snsZone": {
+      "name": "SNS Zone",
+      "full_description": "",
+      "summary_description": "The Stress Response, which is also known as “fight or flight” response, refers to a physiological reaction to imminent danger that occurs when we are scared, anxious,stressed, attacked, or threatened.",
+      "unit_m": ""
+    },
+    "snsIndex": {
+      "name": "SNS Index",
+      "full_description": "",
+      "summary_description": "The SNS index is calculated based on the following three parameters: Heart Rate,Baevsky’s stress index, SD2, and is used to set the stress response zone.",
+      "unit_m": ""
+    },
+    "sd2": {
+      "name": "SD2",
+      "full_description": "",
+      "summary_description": "SD2 is a poincaré plot standard deviation along the line of identity.\nSD2 is one of the parameters used to calculate the SNS Index, along with Heart Rate and Baevsky’s Stress Index.",
+      "unit_m": "ms"
+    },
+    "rri": {
+      "name": "RRi",
+      "full_description": "",
+      "summary_description": "The RR interval is the time between the \"R\" peaks of successive heartbeats, in milliseconds.",
+      "unit_m": ""
+    },
+    "sdnn": {
+      "name": "SDNN",
+      "full_description": "",
+      "summary_description": "SDNN is a calculated parameter of Heart Rate Variability (HRV) that represents the standard deviation of normal-to-normal R-R-intervals. SDNN is expressed in milliseconds, and a normal value for this is over 50.",
+      "unit_m": "ms"
+    },
+    "lfhf": {
+      "name": "LF/HF",
+      "full_description": "",
+      "summary_description": "LF and HF stand for Low-Frequency and High-Frequency bands, which represent theSympathetic and Parasympathetic activity, respectively.",
+      "unit_m": ""
+    },
+    "wellnessLevel": {
+      "name": "Wellness Level",
+      "full_description": "",
+      "summary_description": "The higher the wellness score, the lower the cardiovascular risk.",
+      "unit_m": ""
+    },
+    "wellnessIndex": {
+      "name": "Wellness Index",
+      "full_description": "",
+      "summary_description": "The higher the wellness score, the lower the cardiovascular risk.",
+      "unit_m": ""
+    }
+  }
+  

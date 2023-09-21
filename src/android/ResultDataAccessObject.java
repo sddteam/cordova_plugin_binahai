@@ -16,6 +16,7 @@ import java.util.List;
 public class ResultDataAccessObject {
   private static final int MAX_TABLE_ROWS = 20;
   private DatabaseManager databaseManager;
+  private String TABLE_NAME = "ScanResult";
 
   public ResultDataAccessObject(DatabaseManager databaseManager){
     this.databaseManager = databaseManager;
@@ -35,24 +36,24 @@ public class ResultDataAccessObject {
     values.put("date_time", scanResult.getDate_time());
     values.put("vital_signs_data", scanResult.getVital_signs_data().toString());
 
-    return db.insert("ScanResult", null, values);
+    return db.insert(TABLE_NAME, null, values);
   }
 
   public void deleteResult(long measurement_id){
     SQLiteDatabase db = databaseManager.getDatabase();
-    db.delete("ScanResult", "measurement_id = ?", new String[]{String.valueOf(measurement_id)});
+    db.delete(TABLE_NAME, "measurement_id = ?", new String[]{String.valueOf(measurement_id)});
   }
 
   public void deleteAllResults() {
     SQLiteDatabase db = databaseManager.getDatabase();
-    db.delete("ScanResult", null, null);
+    db.delete(TABLE_NAME, null, null);
   }
 
   public List<ScanResult> getAllResults() throws JSONException {
     List<ScanResult> scanResults = new ArrayList<>();
     SQLiteDatabase db = databaseManager.getDatabase();
 
-    Cursor cursor = db.query("ScanResult", null, null, null, null, null, null);
+    Cursor cursor = db.query(TABLE_NAME, null, null, null, null, null, null);
     if(cursor != null){
       while (cursor.moveToNext()){
         @SuppressLint("Range") long  measurementId = cursor.getLong(cursor.getColumnIndex("measurement_id"));
@@ -82,7 +83,7 @@ public class ResultDataAccessObject {
     String selection = "date_time BETWEEN ? AND ?";
     String[] selectionArgs = { startDateTime, endDateTime };
 
-    Cursor cursor = db.query("ScanResult", null, selection, selectionArgs, null, null, null);
+    Cursor cursor = db.query(TABLE_NAME, null, selection, selectionArgs, null, null, null);
 
     if(cursor != null){
       while (cursor.moveToNext()) {
@@ -104,6 +105,36 @@ public class ResultDataAccessObject {
     }
 
     return scanResults;
+  }
+
+  public ScanResult getResultsByMeasurementId(String id){
+    SQLiteDatabase db = databaseManager.getDatabase();
+    try{
+      String selection = "measurement_id = ?";
+      String[] selectionArgs = {id};
+
+      Cursor cursor = db.query(TABLE_NAME, null, selection, selectionArgs, null, null, null);
+
+      if(cursor != null && cursor.moveToFirst()){
+        @SuppressLint("Range") long measurementId = cursor.getLong(cursor.getColumnIndex("measurement_id"));
+        @SuppressLint("Range") long userId = cursor.getLong(cursor.getColumnIndex("user_id"));
+        @SuppressLint("Range") String dateTime = cursor.getString(cursor.getColumnIndex("date_time"));
+        @SuppressLint("Range") JSONObject vitalSignsData = new JSONObject(cursor.getString(cursor.getColumnIndex("vital_signs_data")));
+
+        ScanResult scanResult = new ScanResult();
+        scanResult.setMeasurement_id(measurementId);
+        scanResult.setUser_id(userId);
+        scanResult.setDate_time(dateTime);
+        scanResult.setVital_signs_data(vitalSignsData);
+
+        cursor.close();
+
+        return scanResult;
+      }
+    }catch (JSONException e){
+      e.printStackTrace();
+    }
+    return null;
   }
 
   private int getCurrentResultCount(){
