@@ -388,7 +388,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     AssetManager assetManager = cordova.getActivity().getAssets();
     JSONObject jsonObject = new JSONObject();
     try{
-      InputStream inputStream = assetManager.open("www/assets/vital_info.json");
+      InputStream inputStream = assetManager.open("vital_info.json");
       BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
       StringBuilder stringBuilder = new StringBuilder();
       String line;
