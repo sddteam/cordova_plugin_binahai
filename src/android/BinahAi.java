@@ -377,9 +377,16 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
         vitalInfo.getJSONObject(signTypeName).put("level", getVitalSignLevel(String.valueOf(scanResult.getVital_signs_data().get(key)), Integer.parseInt(key)));
       }
       jsonObject.put("vital_signs_data", vitalInfo);
+
     }catch(JSONException e){
       e.printStackTrace();
     }
+
+    return jsonObject;
+  }
+
+  private JSONObject getAbnormalResults(JSONObject vitalSignsData){
+   JSONObject jsonObject = new JSONObject();
 
     return jsonObject;
   }
@@ -388,7 +395,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     AssetManager assetManager = cordova.getActivity().getAssets();
     JSONObject jsonObject = new JSONObject();
     try{
-      InputStream inputStream = assetManager.open("vital_info.json");
+      InputStream inputStream = assetManager.open("www/assets/vital_info.json");
       BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
       StringBuilder stringBuilder = new StringBuilder();
       String line;
@@ -542,8 +549,8 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
 
   @Override
   public void onBNHError(int errorCode) {
-    PluginResult pluginResult = new PluginResult(PluginResult.Status.ERROR, errorCode);
-    pluginResult.setKeepCallback(false);
+    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, errorCode);
+    pluginResult.setKeepCallback(true);
     startCameraCallbackContext.sendPluginResult(pluginResult);
   }
 
