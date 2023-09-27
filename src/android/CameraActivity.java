@@ -193,10 +193,6 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
       //Drawing the face detection (if not null..)
       Rect roi = imageData.getROI();
       if (roi != null) {
-
-
-
-        //Log.d(TAG, "ROI: TOP: " + roi.top + "RIGHT: " + roi.right + "BOTTOM: " + roi.bottom + "LEFT: " + roi.left);
         if (!isValidationTimerRunning) {
           int expandRoi = 30;
           int compressionQuality = 20;
@@ -224,7 +220,6 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
           isValidationTimerRunning = true;
           startFaceValidationTimer();
         }
-        //eventListener.onFaceValidation(imageData.getImage());
         JSONObject imageErrorCode = new JSONObject();
         try {
           if (imageData.getImageValidity() != ImageValidity.VALID) {
@@ -235,25 +230,23 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
               //Log.i(TAG, "Image Validity Error: "+ imageData.getImageValidity());
               imageErrorCode.put("imageValidationError", imageData.getImageValidity());
             }
+            //First we scale the SDK face detection rectangle to fit the TextureView size
+            RectF targetRect = new RectF(roi);
+            Matrix m = new Matrix();
+            m.postScale(1f, 1f, image.getWidth() / 2f, image.getHeight() / 2f);
+            m.postScale(
+              (float)_cameraView.getWidth() / image.getWidth(),
+              (float)_cameraView.getHeight() / image.getHeight()
+            );
+            m.mapRect(targetRect);
+            // Then we draw it on the Canvas
+            canvas.drawBitmap(mFaceDetection, null, targetRect, null);
           }
           eventListener.onImageValidation(imageErrorCode);
         }catch (JSONException e){
           e.printStackTrace();
         }
-
-        //First we scale the SDK face detection rectangle to fit the TextureView size
-        RectF targetRect = new RectF(roi);
-        Matrix m = new Matrix();
-        m.postScale(1f, 1f, image.getWidth() / 2f, image.getHeight() / 2f);
-        m.postScale(
-          (float)_cameraView.getWidth() / image.getWidth(),
-          (float)_cameraView.getHeight() / image.getHeight()
-        );
-        m.mapRect(targetRect);
-        // Then we draw it on the Canvas
-        canvas.drawBitmap(mFaceDetection, null, targetRect, null);
       }
-
       _cameraView.unlockCanvasAndPost(canvas);
     });
 
