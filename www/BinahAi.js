@@ -74,4 +74,8 @@ BinahAi.getVitalDescription = function (onSuccess, onError){
     exec(onSuccess, onError, PLUGIN_NAME, 'getVitalDescription', []);
 };
 
+BinahAi.deleteMeasurement = function(measurementId, onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'deleteMeasurement', [measurementId]);
+};
+
 module.exports = BinahAi;

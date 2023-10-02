@@ -79,6 +79,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   private static final String GET_HISTORY_BY_ID = "getHistoryById";
   private static final String GET_HISTORY_BY_DATE_TIME = "getHistoryByDateTime";
   private static final String GET_VITAL_DESCRIPTION = "getVitalDescription";
+  private static final String DELETE_MEASUREMENT = "deleteMeasurement";
 
   private CallbackContext startCameraCallbackContext;
   private CallbackContext startScanCallbackContext;
@@ -129,6 +130,9 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       return getHistoryById(callbackContext, measurementId);
     } else if (GET_VITAL_DESCRIPTION.equals(action)){
       return getVitalDescription(callbackContext);
+    } else if (DELETE_MEASUREMENT.equals(action)){
+      String measurementId = args.getString(0);
+      return deleteMeasurement(callbackContext, measurementId);
     }
     return false;
   }
@@ -357,6 +361,12 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   private boolean getVitalDescription(CallbackContext callbackContext){
     JSONObject jsonObject = getVitalInfo();
     callbackContext.success(jsonObject);
+
+    return true;
+  }
+
+  private boolean deleteMeasurement(CallbackContext callbackContext, String measurementId){
+
 
     return true;
   }
