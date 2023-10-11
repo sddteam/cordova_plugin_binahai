@@ -1,5 +1,6 @@
 package inc.bastion.binahai;
 
+import android.content.Intent;
 import android.content.res.AssetManager;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -75,11 +76,11 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   private static final String IMAGE_VALIDATION = "imageValidation";
   private static final String GET_SESSION_STATE = "getSessionState";
   private static final String USER_FACE_VALIDATION = "userFaceValidation";
-  private static final String GET_ALL_HISTORY = "getAllHistory";
-  private static final String GET_HISTORY_BY_ID = "getHistoryById";
-  private static final String GET_HISTORY_BY_DATE_TIME = "getHistoryByDateTime";
-  private static final String GET_VITAL_DESCRIPTION = "getVitalDescription";
-  private static final String DELETE_MEASUREMENT = "deleteMeasurement";
+  private static final String GET_ALL_MEASUREMENT = "getAllMeasurement";
+  private static final String GET_MEASUREMENT_BY_ID = "getMeasurementById";
+  private static final String GET_MEASUREMENT_BY_DATE_TIME = "getMeasurementByDateTime";
+  private static final String DELETE_MEASUREMENT_BY_ID = "deleteMeasurementById";
+  private static final String SHARE_RESULT = "shareResult";
 
   private CallbackContext startCameraCallbackContext;
   private CallbackContext startScanCallbackContext;
@@ -120,19 +121,20 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       return getSessionState(callbackContext);
     } else if (USER_FACE_VALIDATION.equals(action)) {
       return userFaceValidation(callbackContext);
-    } else if (GET_ALL_HISTORY.equals(action)){
-      return getAllHistory(callbackContext);
-    } else if (GET_HISTORY_BY_DATE_TIME.equals(action)){
+    } else if (GET_ALL_MEASUREMENT.equals(action)){
+      return getAllMeasurement(callbackContext);
+    } else if (GET_MEASUREMENT_BY_DATE_TIME.equals(action)){
       String dateTime = args.getString(0);
-      return getHistoryByDateTime(callbackContext, dateTime);
-    } else if (GET_HISTORY_BY_ID.equals(action)){
+      return getMeasurementByDateTime(callbackContext, dateTime);
+    } else if (GET_MEASUREMENT_BY_ID.equals(action)){
       String measurementId = args.getString(0);
-      return getHistoryById(callbackContext, measurementId);
-    } else if (GET_VITAL_DESCRIPTION.equals(action)){
-      return getVitalDescription(callbackContext);
-    } else if (DELETE_MEASUREMENT.equals(action)){
+      return getMeasurementById(callbackContext, measurementId);
+    } else if (DELETE_MEASUREMENT_BY_ID.equals(action)){
       String measurementId = args.getString(0);
-      return deleteMeasurement(callbackContext, measurementId);
+      return deleteMeasurementById(callbackContext, measurementId);
+    } else if (SHARE_RESULT.equals(action)){
+      String result = args.getString(0);
+      return shareResult(callbackContext, result);
     }
     return false;
   }
@@ -284,7 +286,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return true;
   }
 
-  private boolean getAllHistory(CallbackContext callbackContext) {
+  private boolean getAllMeasurement(CallbackContext callbackContext) {
     cordova.getThreadPool().execute(new Runnable() {
       @Override
       public void run() {
@@ -314,7 +316,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return true;
   }
 
-  private boolean getHistoryByDateTime(CallbackContext callbackContext, String dateTime){
+  private boolean getMeasurementByDateTime(CallbackContext callbackContext, String dateTime){
     cordova.getThreadPool().execute(new Runnable() {
       @Override
       public void run() {
@@ -342,7 +344,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return true;
   }
 
-  private boolean getHistoryById(CallbackContext callbackContext, String measurementId){
+  private boolean getMeasurementById(CallbackContext callbackContext, String measurementId){
     cordova.getThreadPool().execute(new Runnable() {
       @Override
       public void run() {
@@ -358,16 +360,37 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return true;
   }
 
-  private boolean getVitalDescription(CallbackContext callbackContext){
-    JSONObject jsonObject = getVitalInfo();
-    callbackContext.success(jsonObject);
+  private boolean deleteMeasurementById(CallbackContext callbackContext, String measurementId){
+    cordova.getThreadPool().execute(new Runnable() {
+      @Override
+      public void run() {
+        databaseManager = DatabaseManager.getInstance(cordova.getActivity().getApplicationContext());
+        ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);
+
+        resultDAO.deleteResult(measurementId);
+
+        callbackContext.success();
+      }
+    });
 
     return true;
   }
 
-  private boolean deleteMeasurement(CallbackContext callbackContext, String measurementId){
+  private boolean shareResult(CallbackContext callbackContext, String result){
+    cordova.getThreadPool().execute(new Runnable() {
+      @Override
+      public void run() {
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, result);
+        Intent chooseIntent = Intent.createChooser(shareIntent, "Share via");
+        if(shareIntent.resolveActivity(cordova.getActivity().getPackageManager()) != null){
+          cordova.getActivity().startActivity(chooseIntent);
+        }
 
-
+        callbackContext.success();
+      }
+    });
     return true;
   }
 
@@ -391,12 +414,6 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     }catch(JSONException e){
       e.printStackTrace();
     }
-
-    return jsonObject;
-  }
-
-  private JSONObject getAbnormalResults(JSONObject vitalSignsData){
-   JSONObject jsonObject = new JSONObject();
 
     return jsonObject;
   }
@@ -449,7 +466,9 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       case VitalSignTypes.WELLNESS_LEVEL:
       case VitalSignTypes.STRESS_LEVEL:
       case VitalSignTypes.SNS_ZONE:
-        return values;
+        if (values != null && !values.isEmpty()) {
+          return values.substring(0, 1).toUpperCase() + values.substring(1).toLowerCase();
+        }
       case VitalSignTypes.PRQ:
         return determineSignLevel(value, 4, 5);
       case VitalSignTypes.RMSSD:
@@ -459,9 +478,9 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       case VitalSignTypes.RESPIRATION_RATE:
         return determineSignLevel(value, 12, 20);
       case VitalSignTypes.SD1:
-        break;
+        return determineSignLevel(value, 10, 25);
       case VitalSignTypes.SD2:
-        break;
+        return determineSignLevel(value, 20, 40);
       case VitalSignTypes.SDNN:
         return determineSignLevel(value, 50, 50);
       case VitalSignTypes.STRESS_INDEX:
@@ -517,7 +536,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   }
 
   @Override
-  public void onImageValidation(JSONObject imageErrorCode) {
+  public void onImageValidation(int imageErrorCode) {
     PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, imageErrorCode);
     pluginResult.setKeepCallback(true);
     if(imageValidationCallbackContext != null){

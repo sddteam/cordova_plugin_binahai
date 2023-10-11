@@ -95,7 +95,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   public interface ImagePreviewListener{
     void onStartScan(JSONObject vitalSign);
     void onFinalResult(long vitalSignsResults);
-    void onImageValidation(JSONObject imageValidationCode);
+    void onImageValidation(int imageValidationCode);
     void onSessionState(String sessionState);
     void onBNHCameraStarted(Session session);
     void onBNHCameraError(HealthMonitorException e);
@@ -121,6 +121,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   private boolean isValidationTimerRunning = false;
 
   private DatabaseManager databaseManager;
+  private int imageValidity = 0;
 
 
   public void setEventListener(ImagePreviewListener listener){
@@ -220,31 +221,29 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
           isValidationTimerRunning = true;
           startFaceValidationTimer();
         }
-        JSONObject imageErrorCode = new JSONObject();
-        try {
-          if (imageData.getImageValidity() != ImageValidity.VALID) {
-            //Log.i(TAG, "Image Validity Error: "+ imageData.getImageValidity());
-            imageErrorCode.put("imageValidationError", imageData.getImageValidity());
-          }else{
-            if(isInRanged(roi)){
-              //Log.i(TAG, "Image Validity Error: "+ imageData.getImageValidity());
-              imageErrorCode.put("imageValidationError", imageData.getImageValidity());
-            }
-            //First we scale the SDK face detection rectangle to fit the TextureView size
-            RectF targetRect = new RectF(roi);
-            Matrix m = new Matrix();
-            m.postScale(1f, 1f, image.getWidth() / 2f, image.getHeight() / 2f);
-            m.postScale(
-              (float)_cameraView.getWidth() / image.getWidth(),
-              (float)_cameraView.getHeight() / image.getHeight()
-            );
-            m.mapRect(targetRect);
-            // Then we draw it on the Canvas
-            canvas.drawBitmap(mFaceDetection, null, targetRect, null);
+        if (imageData.getImageValidity() != ImageValidity.VALID) {
+          if(imageValidity != imageData.getImageValidity()){
+            imageValidity = imageData.getImageValidity();
+            Log.d(TAG, String.valueOf(imageValidity));
+            eventListener.onImageValidation(imageValidity);
           }
-          eventListener.onImageValidation(imageErrorCode);
-        }catch (JSONException e){
-          e.printStackTrace();
+        }else{
+          if(imageValidity != imageData.getImageValidity()){
+            imageValidity = imageData.getImageValidity();
+            Log.d(TAG, String.valueOf(imageValidity));
+            eventListener.onImageValidation(imageValidity);
+          }
+          //First we scale the SDK face detection rectangle to fit the TextureView size
+          RectF targetRect = new RectF(roi);
+          Matrix m = new Matrix();
+          m.postScale(1f, 1f, image.getWidth() / 2f, image.getHeight() / 2f);
+          m.postScale(
+            (float)_cameraView.getWidth() / image.getWidth(),
+            (float)_cameraView.getHeight() / image.getHeight()
+          );
+          m.mapRect(targetRect);
+          // Then we draw it on the Canvas
+          canvas.drawBitmap(mFaceDetection, null, targetRect, null);
         }
       }
       _cameraView.unlockCanvasAndPost(canvas);
@@ -438,6 +437,10 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     }
   }
 
+  private String parseString(String value){
+    return value.substring(0, 1).toUpperCase() + value.substring(1).toLowerCase();
+  }
+
   @Override
   public void onFinalResults(VitalSignsResults vitalSignsResults) {
     if(_vitalHolder != null){
@@ -499,7 +502,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
               case VitalSignTypes.PNS_ZONE:
                 VitalSignPNSZone pnsZone = (VitalSignPNSZone) sign;
                 String pnsZoneValue = pnsZone.getValue().name();
-                results.put("value", pnsZoneValue);
+                results.put("value", parseString(pnsZoneValue));
                 _signResults.put(signType, results);
                 break;
               case VitalSignTypes.PRQ:
@@ -558,13 +561,13 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
               case VitalSignTypes.SNS_ZONE:
                 VitalSignSNSZone snsZone = (VitalSignSNSZone) sign;
                 String snsZoneValue = snsZone.getValue().name();
-                results.put("value", snsZoneValue);
+                results.put("value", parseString(snsZoneValue));
                 _signResults.put(signType, results);
                 break;
               case VitalSignTypes.STRESS_LEVEL:
                 VitalSignStressLevel stressLevel = (VitalSignStressLevel) sign;
                 String stressLevelValue = stressLevel.getValue().name();
-                results.put("value", stressLevelValue);
+                results.put("value", parseString(stressLevelValue));
                 _signResults.put(signType, results);
                 break;
               case VitalSignTypes.STRESS_INDEX:
@@ -582,7 +585,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
               case VitalSignTypes.WELLNESS_LEVEL:
                 VitalSignWellnessLevel wellnessLevel = (VitalSignWellnessLevel) sign;
                 String wellnessLevelValue = wellnessLevel.getValue().name();
-                results.put("value", wellnessLevelValue);
+                results.put("value", parseString(wellnessLevelValue));
                 _signResults.put(signType, results);
                 break;
               case VitalSignTypes.HEMOGLOBIN:
