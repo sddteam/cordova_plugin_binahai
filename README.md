@@ -84,6 +84,8 @@ Also remove the dark mode theme from the `variables.scss` file.
 - getAllMeasurement
 - getMeasurementById
 - getMeasurementByDateTime
+- deleteMeasurementById
+- shareResult
 
 # Methods
 
@@ -244,6 +246,22 @@ Returns an array `Promise<any>` of scan result.
 const result = await this.binahAi.getMeasurementByDateTime(dateTime);
 ```
 The dateTime is a string in this format `YYYY-MM-DD`.
+
+## deleteMeasurementById(measurementId, [successCallback, errorCallback])
+
+Delete a measurement using measurement id.
+
+```ts
+this.binahAi.deleteMeasurementById(measurementId);
+```
+
+## shareResult(result, [successCallback, errorCallback])
+
+Open an intent(share intent) to share using external apps.
+
+```ts
+this.binahAi.shareResult(result);
+```
 
 # Sample App
 <a href="https://github.com/marhano/binah_ionic_prototype">binah_ionic_prototype</a> for a complete working Cordova example for Android platforms.
