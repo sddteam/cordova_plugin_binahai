@@ -39,9 +39,9 @@ public class ResultDataAccessObject {
     return db.insert(TABLE_NAME, null, values);
   }
 
-  public void deleteResult(long measurement_id){
+  public void deleteResult(String measurement_id){
     SQLiteDatabase db = databaseManager.getDatabase();
-    db.delete(TABLE_NAME, "measurement_id = ?", new String[]{String.valueOf(measurement_id)});
+    db.delete(TABLE_NAME, "measurement_id = ?", new String[]{measurement_id});
   }
 
   public void deleteAllResults() {

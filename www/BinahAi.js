@@ -54,28 +54,26 @@ BinahAi.userFaceValidation = function (onSuccess, onError) {
     exec(onSuccess, onError, PLUGIN_NAME, 'userFaceValidation', []);
 };
 
-BinahAi.getAllHistory = function (onSuccess, onError){
-    exec(onSuccess, onError, PLUGIN_NAME, 'getAllHistory', []);  
+BinahAi.getAllMeasurement = function (onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'getAllMeasurement', []);  
 };
 
-BinahAi.getHistoryById = function (measurementId, onSuccess, onError){
-    exec(onSuccess, onError, PLUGIN_NAME, 'getHistoryById', [measurementId]);  
+BinahAi.getMeasurementById = function (measurementId, onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'getMeasurementById', [measurementId]);  
 };
 
-BinahAi.getHistoryByDateTime = function (dateTime, onSuccess, onError){
-    exec(onSuccess, onError, PLUGIN_NAME, 'getHistoryByDateTime', [dateTime]);
+BinahAi.getMeasurementByDateTime = function (dateTime, onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'getMeasurementByDateTime', [dateTime]);
 }; 
 
-BinahAi.deleteHistoryById = function (measurementId, onSuccess, onError){
-    exec(onSuccess, onError, PLUGIN_NAME, 'deleteHistoryById', [measurementId]);
+BinahAi.deleteMeasurementById = function (measurementId, onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'deleteMeasurementById', [measurementId]);
 };
 
-BinahAi.getVitalDescription = function (onSuccess, onError){
-    exec(onSuccess, onError, PLUGIN_NAME, 'getVitalDescription', []);
+BinahAi.shareResult = function (result, onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'shareResult', [result]);
 };
 
-BinahAi.deleteMeasurement = function(measurementId, onSuccess, onError){
-    exec(onSuccess, onError, PLUGIN_NAME, 'deleteMeasurement', [measurementId]);
-};
+
 
 module.exports = BinahAi;
