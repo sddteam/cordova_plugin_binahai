@@ -197,23 +197,23 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
         if (!isValidationTimerRunning) {
           int expandRoi = 30;
           int compressionQuality = 20;
-          Rect expandedRoi = new Rect(
-            roi.left - expandRoi,
-            roi.top - expandRoi,
-            roi.right + expandRoi,
-            roi.bottom + expandRoi
-          );
+//          Rect expandedRoi = new Rect(
+//            roi.left - expandRoi,
+//            roi.top - expandRoi,
+//            roi.right + expandRoi,
+//            roi.bottom + expandRoi
+//          );
 
-          Bitmap croppedBitmap = Bitmap.createBitmap(
-            image,
-            expandedRoi.left,
-            expandedRoi.top,
-            expandedRoi.width(),
-            expandedRoi.height()
-          );
+//          Bitmap croppedBitmap = Bitmap.createBitmap(
+//            image,
+//            expandedRoi.left,
+//            expandedRoi.top,
+//            expandedRoi.width(),
+//            expandedRoi.height()
+//          );
 
           ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-          croppedBitmap.compress(Bitmap.CompressFormat.JPEG, compressionQuality, outputStream);
+          image.compress(Bitmap.CompressFormat.JPEG, compressionQuality, outputStream);
           byte[] compressedImageData = outputStream.toByteArray();
           Bitmap compressedBitmap = BitmapFactory.decodeByteArray(compressedImageData, 0, compressedImageData.length);
           bitmapImage = compressedBitmap;
