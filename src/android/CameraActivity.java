@@ -44,6 +44,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import ai.binah.sdk.api.HealthMonitorException;
 import ai.binah.sdk.api.SessionEnabledVitalSigns;
@@ -122,6 +125,8 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
 
   private DatabaseManager databaseManager;
   private int imageValidity = 0;
+  private ExecutorService executorService = Executors.newSingleThreadExecutor();
+  private Future<?> createSessionTask;
 
 
   public void setEventListener(ImagePreviewListener listener){
@@ -147,7 +152,10 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     super.onResume();
     int permissionStatus = ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.CAMERA);
     if (permissionStatus == PackageManager.PERMISSION_GRANTED) {
-      createSession();
+      if (executorService == null || executorService.isShutdown()) {
+        executorService = Executors.newSingleThreadExecutor();
+      }
+      createSessionTask = executorService.submit(this::createSession);
     } else {
       requestPermissions((new String[]{android.Manifest.permission.CAMERA}), PERMISSION_REQUEST_CODE);
     }
@@ -163,11 +171,20 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   }
 
   @Override
-  public void onDestroy() {
-    super.onDestroy();
+  public void onStop() {
+    super.onStop();
+
+    if (createSessionTask != null && !createSessionTask.isDone()) {
+      createSessionTask.cancel(true);
+    }
+
     if(mSession != null){
       mSession.terminate();
       mSession = null;
+    }
+
+    if (executorService != null && !executorService.isShutdown()) {
+      executorService.shutdown();
     }
     _vitalHolder = null;
     eventListener = null;
@@ -336,8 +353,9 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   @Override
   public void onSessionStateChange(SessionState sessionState) {
     getActivity().runOnUiThread(() -> {
-      //Toast.makeText(getContext(), "Session state: " + sessionState.name(), Toast.LENGTH_SHORT).show();
-      eventListener.onSessionState(sessionState.name());
+      if (eventListener != null) {
+        eventListener.onSessionState(sessionState.name());
+      }
     });
   }
 
@@ -433,7 +451,12 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     if (requestCode == PERMISSION_REQUEST_CODE
       && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-      createSession();
+      createSessionTask = executorService.submit(new Runnable() {
+        @Override
+        public void run() {
+          createSession();
+        }
+      });
     }
   }
 

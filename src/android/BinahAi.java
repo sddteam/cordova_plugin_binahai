@@ -307,7 +307,12 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
           fos.write(jsonArray.toString().getBytes());
           fos.close();
 
-          callbackContext.success(jsonArray);
+          cordova.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+              callbackContext.success(jsonArray);
+            }
+          });
         }catch (JSONException | IOException e){
           e.printStackTrace();
         }
@@ -335,7 +340,12 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
             jsonArray.put(jsonObject);
           }
 
-          callbackContext.success(jsonArray);
+          cordova.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+              callbackContext.success(jsonArray);
+            }
+          });
         }catch (JSONException e){
           e.printStackTrace();
         }
@@ -354,7 +364,12 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
         ScanResult scanResult = resultDAO.getResultsByMeasurementId(measurementId);
         JSONObject jsonObject = parseVitalSignData(scanResult);
 
-        callbackContext.success(jsonObject);
+        cordova.getActivity().runOnUiThread(new Runnable() {
+          @Override
+          public void run() {
+            callbackContext.success(jsonObject);
+          }
+        });
       }
     });
     return true;
