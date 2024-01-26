@@ -262,7 +262,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
       return false;
     }
     try{
-      if(mSession.getState() != SessionState.READY){
+      if(mSession.getState() == SessionState.PROCESSING){
         stopScanCallbackContext = callbackContext;
         mSession.stop();
         stopScanCallbackContext.success();
@@ -572,16 +572,14 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   public void onBNHCameraStarted(Session session) {
     this.mSession = session;
 
-    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, "Camera started");
-    pluginResult.setKeepCallback(true);
-    startCameraCallbackContext.sendPluginResult(pluginResult);
+    startCameraCallbackContext.success();
   }
 
   @Override
   public void onBNHCameraError(HealthMonitorException e) {
     Log.d(TAG, "Start camera error: " + e.getErrorCode());
 
-    startCameraCallbackContext.error("Start camera error: " + e.getErrorCode());
+    startCameraCallbackContext.error(e.getErrorCode());
   }
 
   @Override
@@ -593,9 +591,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
 
   @Override
   public void onBNHError(int errorCode) {
-    PluginResult pluginResult = new PluginResult(PluginResult.Status.OK, errorCode);
-    pluginResult.setKeepCallback(true);
-    startCameraCallbackContext.sendPluginResult(pluginResult);
+    startScanCallbackContext.error(errorCode);
   }
 
   @Override
