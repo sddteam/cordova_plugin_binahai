@@ -363,7 +363,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   public void onWarning(WarningData warningData) {
     getActivity().runOnUiThread(() -> {
       //Toast.makeText(getContext(), "Domain: "+ warningData.getDomain() + " Warning: " + warningData.getCode(), Toast.LENGTH_SHORT).show();
-      eventListener.onBNHWarning(warningData.getCode());
+      //eventListener.onBNHWarning(warningData.getCode());
     });
   }
 
