@@ -277,7 +277,9 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
       public void run() {
         if (bitmapImage != null) {
           getActivity().runOnUiThread(() -> {
-            eventListener.onFaceValidation(bitmapImage);
+            if(eventListener != null){
+              eventListener.onFaceValidation(bitmapImage);
+            }
           });
         }
       }
