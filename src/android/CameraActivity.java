@@ -165,8 +165,12 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   public void onPause() {
     super.onPause();
     if (mSession != null) {
+      if(mSession.getState() == SessionState.PROCESSING){
+       eventListener.onBNHError(240);
+      }
       mSession.terminate();
       mSession = null;
+
     }
   }
 
@@ -187,7 +191,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
       executorService.shutdown();
     }
     _vitalHolder = null;
-    eventListener = null;
+//    eventListener = null;
     //imageValidationTimer.cancel();
   }
 
