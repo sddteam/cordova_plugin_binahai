@@ -18,6 +18,7 @@ BinahAi.startCamera = function (options, onSuccess, onError) {
 
     options.licenseKey = options.licenseKey;
     options.duration = options.duration;
+    options.userId = options.userId;
     options.weight = options.weight || 0;
     options.age = options.age || 0;
     options.sex = options.sex || 'UNDEFINED';
@@ -25,6 +26,7 @@ BinahAi.startCamera = function (options, onSuccess, onError) {
     exec(onSuccess, onError, PLUGIN_NAME, 'startCamera', [
         options.licenseKey, 
         options.duration,
+        options.userId,
         options.sex, 
         options.age, 
         options.weight]);
