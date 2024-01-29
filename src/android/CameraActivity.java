@@ -110,6 +110,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   private static final String TAG = "CameraActivity";
   private static final int PERMISSION_REQUEST_CODE = 12345;
   public String licenseKey;
+  public String userId;
 
   private Session mSession;
   private Bitmap mFaceDetection;
@@ -654,7 +655,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String dateTime = currentDateTime.format(formatter);
 
-            ScanResult scanResult = new ScanResult(1, dateTime, finalResult);
+            ScanResult scanResult = new ScanResult(userId, dateTime, finalResult);
 
             databaseManager = DatabaseManager.getInstance(getActivity().getApplicationContext());
             ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);
