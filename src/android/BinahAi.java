@@ -81,6 +81,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   private static final String GET_MEASUREMENT_BY_DATE_TIME = "getMeasurementByDateTime";
   private static final String DELETE_MEASUREMENT_BY_ID = "deleteMeasurementById";
   private static final String SHARE_RESULT = "shareResult";
+  private static final String EXTRACT_HEALTH_DATA = "extractHealthData";
 
   private CallbackContext startCameraCallbackContext;
   private CallbackContext startScanCallbackContext;
@@ -102,10 +103,11 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     if (START_CAMERA.equals(action)) {
       String licenseKey = args.getString(0);
       long duration = args.getLong(1);
+      String userId = args.getString(2);
       cordova.getThreadPool().execute(new Runnable() {
         @Override
         public void run() {
-          startCamera(licenseKey, duration, callbackContext);
+          startCamera(licenseKey, duration, userId, callbackContext);
         }
       });
       return true;
@@ -122,19 +124,26 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     } else if (USER_FACE_VALIDATION.equals(action)) {
       return userFaceValidation(callbackContext);
     } else if (GET_ALL_MEASUREMENT.equals(action)){
-      return getAllMeasurement(callbackContext);
+      String userId = args.getString(0);
+      return getAllMeasurement(callbackContext, userId);
     } else if (GET_MEASUREMENT_BY_DATE_TIME.equals(action)){
-      String dateTime = args.getString(0);
-      return getMeasurementByDateTime(callbackContext, dateTime);
+      String userId = args.getString(0);
+      String dateTime = args.getString(1);
+      return getMeasurementByDateTime(callbackContext, userId, dateTime);
     } else if (GET_MEASUREMENT_BY_ID.equals(action)){
-      String measurementId = args.getString(0);
-      return getMeasurementById(callbackContext, measurementId);
+      String userId = args.getString(0);
+      String measurementId = args.getString(1);
+      return getMeasurementById(callbackContext, userId, measurementId);
     } else if (DELETE_MEASUREMENT_BY_ID.equals(action)){
-      String measurementId = args.getString(0);
-      return deleteMeasurementById(callbackContext, measurementId);
+      String userId = args.getString(0);
+      String measurementId = args.getString(1);
+      return deleteMeasurementById(callbackContext, userId, measurementId);
     } else if (SHARE_RESULT.equals(action)){
       String result = args.getString(0);
       return shareResult(callbackContext, result);
+    } else if (EXTRACT_HEALTH_DATA.equals(action)){
+      String userId = args.getString(0);
+      return extractHealthData(callbackContext, userId);
     }
     return false;
   }
@@ -145,13 +154,14 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return true;
   }
 
-  private boolean startCamera(String licenseKey, long duration, CallbackContext callbackContext){
+  private boolean startCamera(String licenseKey, long duration, String userId, CallbackContext callbackContext){
     startCameraCallbackContext = callbackContext;
     final float opacity = Float.parseFloat("1");
     MEASUREMENT_DURATION = duration;
     fragment = new CameraActivity();
     fragment.setEventListener(this);
     fragment.licenseKey = licenseKey;
+    fragment.userId = userId;
 
     cordova.getActivity().runOnUiThread(new Runnable() {
       @Override
@@ -286,7 +296,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return true;
   }
 
-  private boolean getAllMeasurement(CallbackContext callbackContext) {
+  private boolean getAllMeasurement(CallbackContext callbackContext, String userId) {
     cordova.getThreadPool().execute(new Runnable() {
       @Override
       public void run() {
@@ -294,7 +304,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
           databaseManager = DatabaseManager.getInstance(cordova.getActivity().getApplicationContext());
           ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);
 
-          List<ScanResult> scanResults = resultDAO.getAllResults();
+          List<ScanResult> scanResults = resultDAO.getAllResults(userId);
           JSONArray jsonArray = new JSONArray();
 
           for(ScanResult scanResult : scanResults){
@@ -321,7 +331,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return true;
   }
 
-  private boolean getMeasurementByDateTime(CallbackContext callbackContext, String dateTime){
+  private boolean getMeasurementByDateTime(CallbackContext callbackContext, String userId, String dateTime){
     cordova.getThreadPool().execute(new Runnable() {
       @Override
       public void run() {
@@ -332,7 +342,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
           String startDateTime = dateTime + " 00:00:00";
           String endDateTime = dateTime + " 23:59:59";
 
-          List<ScanResult> scanResults = resultDAO.getResultsByDateTimeRange(startDateTime, endDateTime);
+          List<ScanResult> scanResults = resultDAO.getResultsByDateTimeRange(userId, startDateTime, endDateTime);
           JSONArray jsonArray = new JSONArray();
 
           for (ScanResult scanResult : scanResults) {
@@ -354,14 +364,14 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return true;
   }
 
-  private boolean getMeasurementById(CallbackContext callbackContext, String measurementId){
+  private boolean getMeasurementById(CallbackContext callbackContext, String userId, String measurementId){
     cordova.getThreadPool().execute(new Runnable() {
       @Override
       public void run() {
         databaseManager = DatabaseManager.getInstance(cordova.getActivity().getApplicationContext());
         ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);
 
-        ScanResult scanResult = resultDAO.getResultsByMeasurementId(measurementId);
+        ScanResult scanResult = resultDAO.getResultsByMeasurementId(userId, measurementId);
         JSONObject jsonObject = parseVitalSignData(scanResult);
 
         cordova.getActivity().runOnUiThread(new Runnable() {
@@ -375,7 +385,7 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return true;
   }
 
-  private boolean deleteMeasurementById(CallbackContext callbackContext, String measurementId){
+  private boolean deleteMeasurementById(CallbackContext callbackContext, String userId, String measurementId){
     cordova.getThreadPool().execute(new Runnable() {
       @Override
       public void run() {
@@ -406,6 +416,31 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
         callbackContext.success();
       }
     });
+    return true;
+  }
+
+  private boolean extractHealthData(CallbackContext callbackContext, String userId){
+    cordova.getThreadPool().execute(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          databaseManager = DatabaseManager.getInstance(cordova.getActivity().getApplicationContext());
+          ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);
+
+          List<ScanResult> scanResults = resultDAO.getAllResults(userId);
+
+          cordova.getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+              callbackContext.success();
+            }
+          });
+        } catch (JSONException e) {
+          e.printStackTrace();
+        }
+      }
+    });
+
     return true;
   }
 

@@ -18,6 +18,7 @@ BinahAi.startCamera = function (options, onSuccess, onError) {
 
     options.licenseKey = options.licenseKey;
     options.duration = options.duration;
+    options.userId = options.userId;
     options.weight = options.weight || 0;
     options.age = options.age || 0;
     options.sex = options.sex || 'UNDEFINED';
@@ -25,6 +26,7 @@ BinahAi.startCamera = function (options, onSuccess, onError) {
     exec(onSuccess, onError, PLUGIN_NAME, 'startCamera', [
         options.licenseKey, 
         options.duration,
+        options.userId,
         options.sex, 
         options.age, 
         options.weight]);
@@ -54,24 +56,28 @@ BinahAi.userFaceValidation = function (onSuccess, onError) {
     exec(onSuccess, onError, PLUGIN_NAME, 'userFaceValidation', []);
 };
 
-BinahAi.getAllMeasurement = function (onSuccess, onError){
-    exec(onSuccess, onError, PLUGIN_NAME, 'getAllMeasurement', []);  
+BinahAi.getAllMeasurement = function (userId, onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'getAllMeasurement', [userId]);  
 };
 
-BinahAi.getMeasurementById = function (measurementId, onSuccess, onError){
-    exec(onSuccess, onError, PLUGIN_NAME, 'getMeasurementById', [measurementId]);  
+BinahAi.getMeasurementById = function (userId, measurementId, onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'getMeasurementById', [userId, measurementId]);  
 };
 
-BinahAi.getMeasurementByDateTime = function (dateTime, onSuccess, onError){
-    exec(onSuccess, onError, PLUGIN_NAME, 'getMeasurementByDateTime', [dateTime]);
+BinahAi.getMeasurementByDateTime = function (userId, dateTime, onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'getMeasurementByDateTime', [userId, dateTime]);
 }; 
 
-BinahAi.deleteMeasurementById = function (measurementId, onSuccess, onError){
-    exec(onSuccess, onError, PLUGIN_NAME, 'deleteMeasurementById', [measurementId]);
+BinahAi.deleteMeasurementById = function (userId, measurementId, onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'deleteMeasurementById', [userId, measurementId]);
 };
 
 BinahAi.shareResult = function (result, onSuccess, onError){
     exec(onSuccess, onError, PLUGIN_NAME, 'shareResult', [result]);
+};
+
+BinahAi.extractHealthData = function(userId, onSuccess, onError){
+    exec(onSuccess, onError, PLUGIN_NAME, 'extractHealthData', [userId]);
 };
 
 

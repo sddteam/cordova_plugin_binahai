@@ -4,13 +4,13 @@ import org.json.JSONObject;
 
 public class ScanResult {
   private long measurement_id;
-  private long user_id;
+  private String user_id;
   private String date_time;
   private JSONObject vital_signs_data;
 
   public ScanResult(){}
 
-  public ScanResult(long user_id, String date_time, JSONObject vital_signs_data){
+  public ScanResult(String user_id, String date_time, JSONObject vital_signs_data){
     this.user_id = user_id;
     this.date_time = date_time;
     this.vital_signs_data = vital_signs_data;
@@ -24,11 +24,11 @@ public class ScanResult {
     this.measurement_id = measurement_id;
   }
 
-  public long getUser_id(){
+  public String getUser_id(){
     return user_id;
   }
 
-  public void setUser_id(long user_id){
+  public void setUser_id(String user_id){
     this.user_id = user_id;
   }
 

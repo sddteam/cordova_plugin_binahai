@@ -49,23 +49,26 @@ public class ResultDataAccessObject {
     db.delete(TABLE_NAME, null, null);
   }
 
-  public List<ScanResult> getAllResults() throws JSONException {
+  public List<ScanResult> getAllResults(String userId) throws JSONException {
     List<ScanResult> scanResults = new ArrayList<>();
     SQLiteDatabase db = databaseManager.getDatabase();
 
-    Cursor cursor = db.query(TABLE_NAME, null, null, null, null, null, null);
+    String selection = "user_id = ?";
+    String[] selectionArgs = {userId};
+
+    Cursor cursor = db.query(TABLE_NAME, null, selection, selectionArgs, null, null, null);
     if(cursor != null){
       while (cursor.moveToNext()){
-        @SuppressLint("Range") long  measurementId = cursor.getLong(cursor.getColumnIndex("measurement_id"));
-        @SuppressLint("Range") long userId = cursor.getLong(cursor.getColumnIndex("user_id"));
-        @SuppressLint("Range") String dateTime = cursor.getString(cursor.getColumnIndex("date_time"));
-        @SuppressLint("Range") JSONObject vitalSignsData = new JSONObject(cursor.getString(cursor.getColumnIndex("vital_signs_data")));
+        @SuppressLint("Range") long  measurement_id = cursor.getLong(cursor.getColumnIndex("measurement_id"));
+        @SuppressLint("Range") String user_id = cursor.getString(cursor.getColumnIndex("user_id"));
+        @SuppressLint("Range") String date_time = cursor.getString(cursor.getColumnIndex("date_time"));
+        @SuppressLint("Range") JSONObject vital_signs_data = new JSONObject(cursor.getString(cursor.getColumnIndex("vital_signs_data")));
 
         ScanResult scanResult = new ScanResult();
-        scanResult.setMeasurement_id(measurementId);
-        scanResult.setUser_id(userId);
-        scanResult.setDate_time(dateTime);
-        scanResult.setVital_signs_data(vitalSignsData);
+        scanResult.setMeasurement_id(measurement_id);
+        scanResult.setUser_id(user_id);
+        scanResult.setDate_time(date_time);
+        scanResult.setVital_signs_data(vital_signs_data);
 
         scanResults.add(scanResult);
       }
@@ -76,27 +79,27 @@ public class ResultDataAccessObject {
     return scanResults;
   }
 
-  public List<ScanResult> getResultsByDateTimeRange(String startDateTime, String endDateTime) throws JSONException {
+  public List<ScanResult> getResultsByDateTimeRange(String userId, String startDateTime, String endDateTime) throws JSONException {
     List<ScanResult> scanResults = new ArrayList<>();
     SQLiteDatabase db = databaseManager.getDatabase();
 
-    String selection = "date_time BETWEEN ? AND ?";
-    String[] selectionArgs = { startDateTime, endDateTime };
+    String selection = "user_id = ? AND date_time BETWEEN ? AND ?";
+    String[] selectionArgs = {userId, startDateTime, endDateTime};
 
     Cursor cursor = db.query(TABLE_NAME, null, selection, selectionArgs, null, null, null);
 
     if(cursor != null){
       while (cursor.moveToNext()) {
-        @SuppressLint("Range") long measurementId = cursor.getLong(cursor.getColumnIndex("measurement_id"));
-        @SuppressLint("Range") long userId = cursor.getLong(cursor.getColumnIndex("user_id"));
-        @SuppressLint("Range") String dateTime = cursor.getString(cursor.getColumnIndex("date_time"));
-        @SuppressLint("Range") JSONObject vitalSignsData = new JSONObject(cursor.getString(cursor.getColumnIndex("vital_signs_data")));
+        @SuppressLint("Range") long measurement_id = cursor.getLong(cursor.getColumnIndex("measurement_id"));
+        @SuppressLint("Range") String user_id = cursor.getString(cursor.getColumnIndex("user_id"));
+        @SuppressLint("Range") String date_time = cursor.getString(cursor.getColumnIndex("date_time"));
+        @SuppressLint("Range") JSONObject vital_signs_data = new JSONObject(cursor.getString(cursor.getColumnIndex("vital_signs_data")));
 
         ScanResult scanResult = new ScanResult();
-        scanResult.setMeasurement_id(measurementId);
-        scanResult.setUser_id(userId);
-        scanResult.setDate_time(dateTime);
-        scanResult.setVital_signs_data(vitalSignsData);
+        scanResult.setMeasurement_id(measurement_id);
+        scanResult.setUser_id(user_id);
+        scanResult.setDate_time(date_time);
+        scanResult.setVital_signs_data(vital_signs_data);
 
         scanResults.add(scanResult);
       }
@@ -107,25 +110,25 @@ public class ResultDataAccessObject {
     return scanResults;
   }
 
-  public ScanResult getResultsByMeasurementId(String id){
+  public ScanResult getResultsByMeasurementId(String userId, String measurementId){
     SQLiteDatabase db = databaseManager.getDatabase();
     try{
-      String selection = "measurement_id = ?";
-      String[] selectionArgs = {id};
+      String selection = "user_id = ? AND measurement_id = ?";
+      String[] selectionArgs = {userId, measurementId};
 
       Cursor cursor = db.query(TABLE_NAME, null, selection, selectionArgs, null, null, null);
 
       if(cursor != null && cursor.moveToFirst()){
-        @SuppressLint("Range") long measurementId = cursor.getLong(cursor.getColumnIndex("measurement_id"));
-        @SuppressLint("Range") long userId = cursor.getLong(cursor.getColumnIndex("user_id"));
-        @SuppressLint("Range") String dateTime = cursor.getString(cursor.getColumnIndex("date_time"));
-        @SuppressLint("Range") JSONObject vitalSignsData = new JSONObject(cursor.getString(cursor.getColumnIndex("vital_signs_data")));
+        @SuppressLint("Range") long measurement_id = cursor.getLong(cursor.getColumnIndex("measurement_id"));
+        @SuppressLint("Range") String user_id = cursor.getString(cursor.getColumnIndex("user_id"));
+        @SuppressLint("Range") String date_time = cursor.getString(cursor.getColumnIndex("date_time"));
+        @SuppressLint("Range") JSONObject vital_signs_data = new JSONObject(cursor.getString(cursor.getColumnIndex("vital_signs_data")));
 
         ScanResult scanResult = new ScanResult();
-        scanResult.setMeasurement_id(measurementId);
-        scanResult.setUser_id(userId);
-        scanResult.setDate_time(dateTime);
-        scanResult.setVital_signs_data(vitalSignsData);
+        scanResult.setMeasurement_id(measurement_id);
+        scanResult.setUser_id(user_id);
+        scanResult.setDate_time(date_time);
+        scanResult.setVital_signs_data(vital_signs_data);
 
         cursor.close();
 
