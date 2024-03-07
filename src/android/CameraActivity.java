@@ -109,8 +109,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
   private ImagePreviewListener eventListener;
   private static final String TAG = "CameraActivity";
   private static final int PERMISSION_REQUEST_CODE = 12345;
-  public String licenseKey;
-  public String userId;
+  public JSONObject cameraOption;
 
   private Session mSession;
   private Bitmap mFaceDetection;
@@ -343,9 +342,14 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     if(mSession != null){
       return;
     }
-    LicenseDetails licenseDetails = new LicenseDetails(licenseKey);
     try {
+      LicenseDetails licenseDetails = new LicenseDetails(cameraOption.getString("licenseKey"));
+      Sex gender = Sex.valueOf(cameraOption.optString("gender", "UNSPECIFIED").toUpperCase());
+      Double age = cameraOption.getDouble("age") != 0 ? cameraOption.getDouble("age") : null;
+      Double weight = cameraOption.getDouble("weight") != 0 ? cameraOption.getDouble("weight") : null;
+      SubjectDemographic subjectDemographic = new SubjectDemographic(gender, age, weight);
       mSession = new FaceSessionBuilder(getActivity().getApplicationContext())
+        .withSubjectDemographic(subjectDemographic)
         .withImageListener(this)
         .withVitalSignsListener(this)
         .withSessionInfoListener(this)
@@ -354,6 +358,8 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
     } catch (HealthMonitorException e) {
       //showAlert(null, "Create session error: " + e.getErrorCode());
       eventListener.onBNHCameraError(e);
+    } catch (JSONException e){
+      e.printStackTrace();
     }
   }
 
@@ -461,7 +467,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
       createSessionTask = executorService.submit(new Runnable() {
         @Override
         public void run() {
-          createSession();
+            createSession();
         }
       });
     }
@@ -655,7 +661,7 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
             String dateTime = currentDateTime.format(formatter);
 
-            ScanResult scanResult = new ScanResult(userId, dateTime, finalResult);
+            ScanResult scanResult = new ScanResult(cameraOption.getString("userId"), dateTime, finalResult);
 
             databaseManager = DatabaseManager.getInstance(getActivity().getApplicationContext());
             ResultDataAccessObject resultDAO = new ResultDataAccessObject(databaseManager);

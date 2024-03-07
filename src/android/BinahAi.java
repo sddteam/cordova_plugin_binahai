@@ -101,13 +101,17 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
     if (START_CAMERA.equals(action)) {
-      String licenseKey = args.getString(0);
-      long duration = args.getLong(1);
-      String userId = args.getString(2);
+      JSONObject jsonObject = new JSONObject();
+      jsonObject.put("licenseKey", args.getString(0));
+      jsonObject.put("duration", args.getLong(1));
+      jsonObject.put("userId", args.getString(2));
+      jsonObject.put("gender", args.getString(3));
+      jsonObject.put("age", args.getLong(4));
+      jsonObject.put("weight", args.getLong(5));
       cordova.getThreadPool().execute(new Runnable() {
         @Override
         public void run() {
-          startCamera(licenseKey, duration, userId, callbackContext);
+          startCamera(jsonObject, callbackContext);
         }
       });
       return true;
@@ -154,71 +158,76 @@ public class BinahAi extends CordovaPlugin implements CameraActivity.ImagePrevie
     return true;
   }
 
-  private boolean startCamera(String licenseKey, long duration, String userId, CallbackContext callbackContext){
-    startCameraCallbackContext = callbackContext;
-    final float opacity = Float.parseFloat("1");
-    MEASUREMENT_DURATION = duration;
-    fragment = new CameraActivity();
-    fragment.setEventListener(this);
-    fragment.licenseKey = licenseKey;
-    fragment.userId = userId;
+  private boolean startCamera(JSONObject cameraOption, CallbackContext callbackContext){
+    try{
+      startCameraCallbackContext = callbackContext;
+      final float opacity = Float.parseFloat("1");
+      MEASUREMENT_DURATION = cameraOption.getLong("duration");
+      fragment = new CameraActivity();
+      fragment.setEventListener(this);
+      fragment.cameraOption = cameraOption;
 
-    cordova.getActivity().runOnUiThread(new Runnable() {
-      @Override
-      public void run() {
-        //create or update the layout params for the container view
-        FrameLayout containerView = (FrameLayout)cordova.getActivity().findViewById(containerViewId);
-        if(containerView == null){
-          containerView = new FrameLayout(cordova.getActivity().getApplicationContext());
-          containerView.setId(containerViewId);
+      cordova.getActivity().runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          //create or update the layout params for the container view
+          FrameLayout containerView = (FrameLayout)cordova.getActivity().findViewById(containerViewId);
+          if(containerView == null){
+            containerView = new FrameLayout(cordova.getActivity().getApplicationContext());
+            containerView.setId(containerViewId);
 
-          FrameLayout.LayoutParams containerLayoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
-          cordova.getActivity().addContentView(containerView, containerLayoutParams);
-        }
-
-        //display camera below the webview
-        if(toBack){
-          View view = webView.getView();
-          ViewParent rootParent = containerView.getParent();
-          ViewParent curParent = view.getParent();
-
-          view.setBackgroundColor(0x00000000);
-
-          // If parents do not match look for.
-          if(curParent.getParent() != rootParent) {
-            while(curParent != null && curParent.getParent() != rootParent) {
-              curParent = curParent.getParent();
-            }
-
-            if(curParent != null) {
-              ((ViewGroup)curParent).setBackgroundColor(0x00000000);
-              ((ViewGroup)curParent).bringToFront();
-            } else {
-              // Do default...
-              curParent = view.getParent();
-              webViewParent = curParent;
-              ((ViewGroup)view).bringToFront();
-            }
-          }else{
-            // Default
-            webViewParent = curParent;
-            ((ViewGroup)curParent).bringToFront();
+            FrameLayout.LayoutParams containerLayoutParams = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT);
+            cordova.getActivity().addContentView(containerView, containerLayoutParams);
           }
 
-        }else{
-          //set view back to front
-          containerView.setAlpha(opacity);
-          containerView.bringToFront();
+          //display camera below the webview
+          if(toBack){
+            View view = webView.getView();
+            ViewParent rootParent = containerView.getParent();
+            ViewParent curParent = view.getParent();
+
+            view.setBackgroundColor(0x00000000);
+
+            // If parents do not match look for.
+            if(curParent.getParent() != rootParent) {
+              while(curParent != null && curParent.getParent() != rootParent) {
+                curParent = curParent.getParent();
+              }
+
+              if(curParent != null) {
+                ((ViewGroup)curParent).setBackgroundColor(0x00000000);
+                ((ViewGroup)curParent).bringToFront();
+              } else {
+                // Do default...
+                curParent = view.getParent();
+                webViewParent = curParent;
+                ((ViewGroup)view).bringToFront();
+              }
+            }else{
+              // Default
+              webViewParent = curParent;
+              ((ViewGroup)curParent).bringToFront();
+            }
+
+          }else{
+            //set view back to front
+            containerView.setAlpha(opacity);
+            containerView.bringToFront();
+          }
+
+
+          FragmentManager fragmentManager = cordova.getActivity().getSupportFragmentManager();
+          FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+          fragmentTransaction.add(containerView.getId(), fragment);
+          fragmentTransaction.addToBackStack(null);
+          fragmentTransaction.commit();
         }
+      });
 
-
-        FragmentManager fragmentManager = cordova.getActivity().getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(containerView.getId(), fragment);
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
-      }
-    });
+    }catch (JSONException e){
+      e.printStackTrace();
+      return false;
+    }
 
     return true;
   }
