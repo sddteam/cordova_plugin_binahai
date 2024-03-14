@@ -215,9 +215,15 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
       //Drawing the face detection (if not null..)
       Rect roi = imageData.getROI();
       if (roi != null) {
+//        int compressionQuality = 20;
+//        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+//        image.compress(Bitmap.CompressFormat.JPEG, compressionQuality, outputStream);
+//        byte[] compressedImageData = outputStream.toByteArray();
+//        Bitmap compressedBitmap = BitmapFactory.decodeByteArray(compressedImageData, 0, compressedImageData.length);
+        bitmapImage = image;
         if (!isValidationTimerRunning) {
           int expandRoi = 30;
-          int compressionQuality = 20;
+
 //          Rect expandedRoi = new Rect(
 //            roi.left - expandRoi,
 //            roi.top - expandRoi,
@@ -233,11 +239,6 @@ public class CameraActivity extends Fragment implements ImageListener, SessionIn
 //            expandedRoi.height()
 //          );
 
-          ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-          image.compress(Bitmap.CompressFormat.JPEG, compressionQuality, outputStream);
-          byte[] compressedImageData = outputStream.toByteArray();
-          Bitmap compressedBitmap = BitmapFactory.decodeByteArray(compressedImageData, 0, compressedImageData.length);
-          bitmapImage = compressedBitmap;
 
           isValidationTimerRunning = true;
           startFaceValidationTimer();
